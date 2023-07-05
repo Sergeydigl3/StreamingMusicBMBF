@@ -1,0 +1,162 @@
+{
+  "invocationInfo": {
+    "hostname": "music-stable-back-vla-30.vla.yp-c.yandex.net",
+    "req-id": "1688476249889958-10781446519137428268",
+    "exec-duration-millis": "36"
+  },
+  "result": {
+    "owner": {
+      "uid": 273593788,
+      "login": "Sergeydigl3",
+      "name": "Sergeydigl3",
+      "sex": "unknown",
+      "verified": false
+    },
+    "playlistUuid": "d15c38a4-1813-69a3-aa78-72f029024e3d",
+    "available": true,
+    "uid": 273593788,
+    "kind": 1020,
+    "title": "Oliver fav",
+    "revision": 22,
+    "snapshot": 23,
+    "trackCount": 1,
+    "visibility": "public",
+    "collective": false,
+    "created": "2021-10-06T22:53:03+00:00",
+    "modified": "2021-10-06T23:01:35+00:00",
+    "isBanner": false,
+    "isPremiere": false,
+    "durationMs": 3409800,
+    "cover": {
+      "type": "pic",
+      "dir": "/get-music-user-playlist/38125/273593788.1020.26965/",
+      "version": "1633561374115",
+      "uri": "avatars.yandex.net/get-music-user-playlist/38125/273593788.1020.26965/%%?1633561374115",
+      "custom": true
+    },
+    "ogImage": "avatars.yandex.net/get-music-user-playlist/38125/273593788.1020.26965/%%?1633561374115",
+    "tracks": [
+      {
+        "id": 84010387,
+        "track": {
+          "id": "84010387",
+          "realId": "84010387",
+          "title": "Life Goes On",
+          "trackSource": "OWN",
+          "major": {
+            "id": 4,
+            "name": "WARNER"
+          },
+          "available": true,
+          "availableForPremiumUsers": true,
+          "availableFullWithoutPermission": false,
+          "disclaimers": [],
+          "availableForOptions": [
+            "bookmate"
+          ],
+          "durationMs": 161800,
+          "storageDir": "",
+          "fileSize": 0,
+          "r128": {
+            "i": -8.1,
+            "tp": 0.71
+          },
+          "fade": {
+            "inStart": 0.1,
+            "inStop": 0.1,
+            "outStart": 158,
+            "outStop": 160.4
+          },
+          "previewDurationMs": 30000,
+          "artists": [
+            {
+              "id": 4525928,
+              "name": "Oliver Tree",
+              "various": false,
+              "composer": false,
+              "cover": {
+                "type": "from-artist-photos",
+                "prefix": "dfba24f3.p.4525928/",
+                "uri": "avatars.yandex.net/get-music-content/2427101/dfba24f3.p.4525928/%%"
+              },
+              "genres": [],
+              "disclaimers": []
+            }
+          ],
+          "albums": [
+            {
+              "id": 15867904,
+              "title": "Ugly is Beautiful: Shorter, Thicker & Uglier",
+              "metaType": "music",
+              "version": "Deluxe",
+              "contentWarning": "explicit",
+              "year": 2021,
+              "releaseDate": "2021-05-28T00:00:00+03:00",
+              "coverUri": "avatars.yandex.net/get-music-content/4446014/85166a3c.a.15867904-1/%%",
+              "ogImage": "avatars.yandex.net/get-music-content/4446014/85166a3c.a.15867904-1/%%",
+              "genre": "indie",
+              "trackCount": 21,
+              "recent": false,
+              "veryImportant": false,
+              "artists": [
+                {
+                  "id": 4525928,
+                  "name": "Oliver Tree",
+                  "various": false,
+                  "composer": false,
+                  "cover": {
+                    "type": "from-artist-photos",
+                    "prefix": "dfba24f3.p.4525928/",
+                    "uri": "avatars.yandex.net/get-music-content/2427101/dfba24f3.p.4525928/%%"
+                  },
+                  "genres": [],
+                  "disclaimers": []
+                }
+              ],
+              "labels": [
+                {
+                  "id": 31588,
+                  "name": "Atlantic"
+                }
+              ],
+              "available": true,
+              "availableForPremiumUsers": true,
+              "disclaimers": [],
+              "availableForOptions": [
+                "bookmate"
+              ],
+              "availableForMobile": true,
+              "availablePartially": false,
+              "bests": [
+                84010387,
+                46100755,
+                68741637
+              ],
+              "trackPosition": {
+                "volume": 1,
+                "index": 1
+              }
+            }
+          ],
+          "coverUri": "avatars.yandex.net/get-music-content/4446014/85166a3c.a.15867904-1/%%",
+          "ogImage": "avatars.yandex.net/get-music-content/4446014/85166a3c.a.15867904-1/%%",
+          "lyricsAvailable": true,
+          "lyricsInfo": {
+            "hasAvailableSyncLyrics": true,
+            "hasAvailableTextLyrics": true
+          },
+          "type": "music",
+          "rememberPosition": false,
+          "backgroundVideoUri": "https://strm.yandex.ru/vh-music-videoshots-converted/vod-content/6043644669093581546/mp4/mp4/360x640p.mp4",
+          "trackSharingFlag": "COVER_ONLY",
+          "playerId": "vgyefiJ6Yb3o"
+        },
+        "timestamp": "2021-10-06T22:53:03+00:00",
+        "originalIndex": 0,
+        "recent": false
+      }
+    ],
+    "tags": [],
+    "likesCount": 0
+  }
+}

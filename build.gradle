@@ -1,0 +1,51 @@
+//buildscript {
+//    repositories {
+//        maven {
+//            url "https://plugins.gradle.org/m2/"
+//        }
+//    }
+//    dependencies {
+//        classpath "io.freefair.gradle:lombok-plugin:8.1.0"
+//    }
+//}
+
+plugins {
+    id 'java'
+//    id 'org.javamodularity.moduleplugin' version '1.8.12' apply true
+    id 'application'
+    id 'io.freefair.lombok' version '8.1.0'
+}
+//apply plugin: "io.freefair.lombok"
+
+group 'ru.dingo3'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+//    classpath "io.freefair.gradle:lombok-plugin:8.1.0"
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation 'org.json:json:20230227'
+
+
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = 'ru.dingo3.streamingmusicbmbf.ui.Main'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
