@@ -8,16 +8,8 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class HttpRequest {
     private Map<String, String> headers = new HashMap<String, String>();
-
-    // constructor
-    // public HttpRequest() {
-    //     this.userAgent = "Yandex-Music-API";
-    // }
 
     public void setHeader(String key, String value) {
         this.headers.put(key, value);
@@ -33,11 +25,6 @@ public class HttpRequest {
 
     public void setUserAgent(String userAgent) {
         this.setHeader("User-Agent", userAgent);
-    }
-
-    public static String convertCamelToSnake(String text) {
-        String s = text.replaceAll("(.)([A-Z][a-z]+)", "$1_$2");
-        return s.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase();
     }
 
     // HTTP GET request

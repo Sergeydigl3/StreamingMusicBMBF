@@ -1,8 +1,6 @@
 package ru.dingo3.streamingmusicbmbf.helpers;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.*;

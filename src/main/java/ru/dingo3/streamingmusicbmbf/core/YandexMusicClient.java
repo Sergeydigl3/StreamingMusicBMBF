@@ -145,7 +145,11 @@ public class YandexMusicClient {
 
     public void downloadTrack(int trackId, Path savePath) {
         String url = this.baseUrl + "/tracks/" + trackId + "/download-info";
-
+        // check if file exists
+        if (Files.exists(savePath)) {
+            System.out.println("File already exists");
+            return;
+        }
         try {
             String response = this.request.sendGet(url);
 //            System.out.println(response);
@@ -203,9 +207,16 @@ public class YandexMusicClient {
         client.init();
 
         System.out.println(client.getMe().getDisplayName());
-        client.getPlaylists();
-
+//        client.getPlaylists()
+        for (Playlist playlist : client.getPlaylists()) {
+            System.out.println(playlist.getTitle());
+//            System.out.println(playlist.getKind());
+//            System.out.println(playlist.getTracks());
+            System.out.println(playlist.getOgImage());
+            System.out.println("\n");
+        }
         client.getPlaylistTracks(1020);
+
 
         client.downloadTrack(84010387, Paths.get("C:\\Projects\\suai\\StreamingMusicBMBF\\cache\\music\\84010387.mp3"));
 
