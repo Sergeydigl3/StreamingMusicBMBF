@@ -49,41 +49,73 @@ public class PlaylistApp extends JFrame {
         setMinimumSize(new java.awt.Dimension(800, 400));
 
         JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.setAlignmentY(Component.TOP_ALIGNMENT);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        panel.setLayout(new javax.swing.BoxLayout(panel, javax.swing.BoxLayout.PAGE_AXIS));
+//        panel.setLayout(new javax.swing.BoxLayout(panel, javax.swing.BoxLayout.PAGE_AXIS));
 
         header = new PlaylistHeader();
         panel.add(header);
 
         JSeparator separator = new JSeparator();
+        separator.setMaximumSize(new Dimension(Short.MAX_VALUE, 30));
+//        separator.setBackground(Color.BLUE);
         panel.add(separator);
+//        panel.setBackground(Color.BLUE);
+        MusicList musicList = new MusicList();
+        panel.add(musicList);
+        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        content = new PlaylistContent("TRACK", "ARTIST", "STATUS");
+//        panel.add(content);
 
-        content = new PlaylistContent("TRACK", "ARTIST", "STATUS");
-        panel.add(content);
-
-        JScrollPane jScrollPane1 = new JScrollPane();
-        jScrollPane1.setBorder(null);
-        jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setAlignmentX(0.0F);
-        jScrollPane1.setAlignmentY(0.0F);
-        jScrollPane1.setColumnHeader(null);
-        jScrollPane1.setColumnHeaderView(null);
-        jScrollPane1.setRowHeaderView(null);
-
-        JPanel jPanel2 = new JPanel();
-        jPanel2.setAlignmentY(0.0F);
-        jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.PAGE_AXIS));
-
-        content2 = new PlaylistContent("TRACK", "ARTIST", "STATUS");
-        jPanel2.add(content2);
-
-        jScrollPane1.setViewportView(jPanel2);
-        panel.add(jScrollPane1);
+//        JScrollPane jScrollPane1 = new JScrollPane();
+//        jScrollPane1.setBorder(null);
+//        jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+//        jScrollPane1.setAlignmentX(0.0F);
+//        jScrollPane1.setAlignmentY(0.0F);
+//        jScrollPane1.setColumnHeader(null);
+//        jScrollPane1.setColumnHeaderView(content);
+////        jScrollPane1.setRowHeaderView(content);
+////        jScrollPane1.set
+//
+//        JPanel jPanel2 = new JPanel();
+//        jPanel2.setAlignmentY(0.0F);
+//        jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.PAGE_AXIS));
+//
+//        content2 = new PlaylistContent("TRACK", "ARTIST", "STATUS");
+//        jPanel2.add(content2);
+//
+//        jScrollPane1.setViewportView(jPanel2);
+//        panel.add(jScrollPane1);
 
         add(panel);
         pack();
+
     }
 
     public static void main(String args[]) {
@@ -120,7 +152,7 @@ class PlaylistHeader extends JPanel {
 
         // -------- playlist info --------
         playlistInfo = new JPanel();
-        playlistInfo.setAlignmentX(0.0F);
+        playlistInfo.setAlignmentX(Component.LEFT_ALIGNMENT);
         playlistInfo.setLayout(new javax.swing.BoxLayout(playlistInfo, javax.swing.BoxLayout.LINE_AXIS));
         playlistInfo.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
 
@@ -159,7 +191,7 @@ class PlaylistHeader extends JPanel {
 
         // -------- playlist actions buttons --------
         JPanel playlistActions = new JPanel();
-        playlistActions.setAlignmentX(0.0F);
+        playlistActions.setAlignmentX(Component.LEFT_ALIGNMENT);
         playlistActions.setLayout(new javax.swing.BoxLayout(playlistActions, javax.swing.BoxLayout.LINE_AXIS));
 
         syncButton = new JButton();
@@ -185,6 +217,7 @@ class PlaylistContent extends JPanel {
 
     private void initComponents(String track, String artist, String status) {
         setAlignmentX(0.0F);
+        setAlignmentY(0.0F);
         setMaximumSize(new java.awt.Dimension(2147483647, 18));
         setMinimumSize(new java.awt.Dimension(212, 18));
         java.awt.GridBagLayout contentLayout = new java.awt.GridBagLayout();
@@ -208,4 +241,64 @@ class PlaylistContent extends JPanel {
         jStatus.setText(status);
         add(jStatus, new java.awt.GridBagConstraints());
     }
+}
+
+class MusicList extends JScrollPane {
+    private JPanel headerPanel;
+    private JPanel mainPanel;
+
+    public MusicList() {
+        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        mainPanel = new JPanel();
+//        mainPanel.setBackground(Color.YELLOW);
+
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setAlignmentY(Component.TOP_ALIGNMENT);
+
+        setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+//        setColumnHeaderView(new JPanel(new GridLayout(1, 3)));
+
+        headerPanel = new JPanel(new GridLayout(1, 3));
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+
+        String title = "TITLE";
+        JLabel titleLabel = new JLabel(title);
+        JLabel artistLabel = new JLabel("ARTIST");
+        JLabel statusLabel = new JLabel("STATUS");
+        title = "TITLe";
+
+        headerPanel.add(titleLabel);
+        headerPanel.add(artistLabel);
+        headerPanel.add(statusLabel);
+
+        setColumnHeaderView(headerPanel);
+
+        setViewportView(mainPanel);
+    }
+
+    public void addRow(String title, String artist, String status, boolean isHeader) {
+        JPanel rowPanel = new JPanel(new GridLayout(1, 3));
+//        rowPanel.setBackground(Color.lightGray);
+//        rowPanel.setAlignmentY(Component.TOP_ALIGNMENT);
+        rowPanel.setMaximumSize(new Dimension(Short.MAX_VALUE, 30));
+        rowPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        JLabel titleLabel = new JLabel(title);
+        JLabel artistLabel = new JLabel(artist);
+        JLabel statusLabel = new JLabel(status);
+
+        if (isHeader) {
+            titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
+            artistLabel.setFont(artistLabel.getFont().deriveFont(Font.BOLD));
+            statusLabel.setFont(statusLabel.getFont().deriveFont(Font.BOLD));
+        }
+
+        rowPanel.add(titleLabel);
+        rowPanel.add(artistLabel);
+        rowPanel.add(statusLabel);
+
+        mainPanel.add(rowPanel);
+
+    }
+
 }
