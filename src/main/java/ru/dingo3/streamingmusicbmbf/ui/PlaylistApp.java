@@ -1,11 +1,16 @@
 package ru.dingo3.streamingmusicbmbf.ui;
 
+import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
+import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
+import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 
 class RoundedImageExample extends JPanel {
     private BufferedImage image;
@@ -35,17 +40,13 @@ class RoundedImageExample extends JPanel {
     }
 }
 
-public class PlaylistApp extends JFrame {
+public class PlaylistApp extends JDialog {
     private PlaylistHeader header;
     private PlaylistContent content;
     private PlaylistContent content2;
 
-    public PlaylistApp() {
-        initComponents();
-    }
-
-    private void initComponents() {
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+    public PlaylistApp(AbstractProvider provider, BasePlaylist playlist) {
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(800, 400));
 
         JPanel panel = new JPanel();
@@ -66,56 +67,20 @@ public class PlaylistApp extends JFrame {
 //        panel.setBackground(Color.BLUE);
         MusicList musicList = new MusicList();
         panel.add(musicList);
-        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
-//        content = new PlaylistContent("TRACK", "ARTIST", "STATUS");
-//        panel.add(content);
 
-//        JScrollPane jScrollPane1 = new JScrollPane();
-//        jScrollPane1.setBorder(null);
-//        jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-//        jScrollPane1.setAlignmentX(0.0F);
-//        jScrollPane1.setAlignmentY(0.0F);
-//        jScrollPane1.setColumnHeader(null);
-//        jScrollPane1.setColumnHeaderView(content);
-////        jScrollPane1.setRowHeaderView(content);
-////        jScrollPane1.set
-//
-//        JPanel jPanel2 = new JPanel();
-//        jPanel2.setAlignmentY(0.0F);
-//        jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.PAGE_AXIS));
-//
-//        content2 = new PlaylistContent("TRACK", "ARTIST", "STATUS");
-//        jPanel2.add(content2);
-//
-//        jScrollPane1.setViewportView(jPanel2);
-//        panel.add(jScrollPane1);
+        ArrayList<BaseTrack> providerTracks = provider.getTracks(playlist.getId());
+
+        if (providerTracks != null) {
+            for (BaseTrack track : providerTracks) {
+                musicList.addRow(track.getTitle(), track.getArtist(), "STATUS", false);
+            }
+        }
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
+//        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
 
         add(panel);
         pack();
-
     }
 
     public static void main(String args[]) {
@@ -130,9 +95,9 @@ public class PlaylistApp extends JFrame {
             java.util.logging.Logger.getLogger(PlaylistApp.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
 
-        java.awt.EventQueue.invokeLater(() -> {
-            new PlaylistApp().setVisible(true);
-        });
+//        java.awt.EventQueue.invokeLater(() -> {
+//            new PlaylistApp().setVisible(true);
+//        });
     }
 }
 

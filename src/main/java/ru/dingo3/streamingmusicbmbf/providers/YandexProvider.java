@@ -1,5 +1,6 @@
 package ru.dingo3.streamingmusicbmbf.providers;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
@@ -70,6 +71,9 @@ public class YandexProvider implements AbstractProvider {
     public ArrayList<BasePlaylist> getPlaylists() {
         ArrayList<BasePlaylist> playlists = new ArrayList<>();
         ArrayList<PlaylistsResponse.Playlist> ymPlaylist = yandexMusicClient.getPlaylists();
+        if (ymPlaylist == null) {
+            return playlists;
+        }
         for (PlaylistsResponse.Playlist ymPlaylistItem : ymPlaylist) {
             BasePlaylist playlist = new BasePlaylist();
             playlist.setId(ymPlaylistItem.getPlaylistUuid());
@@ -83,6 +87,19 @@ public class YandexProvider implements AbstractProvider {
     @Override
     public ArrayList<BaseTrack> getTracks(String playlistId) {
         ArrayList<BaseTrack> tracks = new ArrayList<>();
+        ArrayList<PlaylistResponse.Track> ymTracks = yandexMusicClient.getPlaylistTracks(playlistId);
+        if (ymTracks == null) {
+            for (PlaylistResponse.Track ymTrack : ymTracks) {
+                BaseTrack track = new BaseTrack();
+                track.setId(ymTrack.getId());
+                track.setTitle(ymTrack.getTrack().getId());
+                track.setArtist(ymTrack.getTrack().getArtists().get(0).getName());
+
+
+//                track.setImage("https://"+ymTrack.getOgImage().replace("%%", "400x400"));
+                tracks.add(track);
+            }
+        }
         return tracks;
     }
 

@@ -5,6 +5,7 @@ import ru.dingo3.streamingmusicbmbf.layouts.WrapLayout;
 import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
 import ru.dingo3.streamingmusicbmbf.providers.YandexProvider;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
+import ru.dingo3.streamingmusicbmbf.ui.PlaylistApp;
 
 import javax.swing.*;
 //import javax.swing.border.AbstractBorder;
@@ -165,9 +166,11 @@ class CardBase extends JPanel {
         playlistPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 //        playlistPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 //        playlistPanel.setAlignmentY(Component.TOP_ALIGNMENT);
-
-        for (BasePlaylist playlist : provider.getPlaylists()) {
-            playlistPanel.add(new PlaylistPanel(playlist, provider));
+        ArrayList<BasePlaylist> playlists = provider.getPlaylists();
+        if (playlists != null) {
+            for (BasePlaylist playlist : playlists) {
+                playlistPanel.add(new PlaylistPanel(playlist, provider));
+            }
         }
 //        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist2.jpg"));
 //        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist2.jpg"));
@@ -231,7 +234,11 @@ class PlaylistPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                System.out.println("Clicked");
+                // Open playlist
+                System.out.println("Clicked on playlist " + playlist.getTitle());
+
+                JDialog dialog = new PlaylistApp(provider, playlist);
+                dialog.setVisible(true);
             }
         });
     }

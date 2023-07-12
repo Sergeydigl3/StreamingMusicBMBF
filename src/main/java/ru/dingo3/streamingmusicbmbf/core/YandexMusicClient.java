@@ -120,7 +120,7 @@ public class YandexMusicClient {
     }
 
 
-    public List<Track> getPlaylistTracks(int playlistId, int userId) {
+    public ArrayList<Track> getPlaylistTracks(String playlistId, int userId) {
         String url = this.baseUrl + "/users/" + userId + "/playlists/" + playlistId;
 
         try {
@@ -140,7 +140,7 @@ public class YandexMusicClient {
         return null;
     }
 
-    public List<Track> getPlaylistTracks(int playlistId) {
+    public ArrayList<Track> getPlaylistTracks(String playlistId) {
         return this.getPlaylistTracks(playlistId, this.me.getUid());
     }
 
@@ -216,7 +216,7 @@ public class YandexMusicClient {
             System.out.println(playlist.getOgImage());
             System.out.println("\n");
         }
-        client.getPlaylistTracks(1020);
+        client.getPlaylistTracks("1020");
 
 
         client.downloadTrack(84010387, Paths.get("C:\\Projects\\suai\\StreamingMusicBMBF\\cache\\music\\84010387.mp3"));
