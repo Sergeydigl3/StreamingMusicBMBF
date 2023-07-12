@@ -2,6 +2,7 @@ package ru.dingo3.streamingmusicbmbf.network;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.io.BufferedReader;
@@ -45,7 +46,7 @@ public class HttpRequest {
 //        System.out.println("Response Code : " + responseCode);
 
         BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
+                new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
         String inputLine;
         StringBuffer response = new StringBuffer();
 
