@@ -1,42 +1,92 @@
 package ru.dingo3.streamingmusicbmbf.providers;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.json.JSONObject;
 import ru.dingo3.streamingmusicbmbf.core.YandexMusicClient;
+import ru.dingo3.streamingmusicbmbf.models.PlaylistResponse;
+import ru.dingo3.streamingmusicbmbf.models.PlaylistsResponse;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
 
 import javax.swing.*;
 import java.awt.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayList;
 
-public class YandexProvider extends AbstractProvider{
-    private String providerName = "Yandex.Music";
-    private YandexMusicClient yandexMusicClient;
+public class YandexProvider implements AbstractProvider {
+    private static final String providerName = "Yandex.Music";
+    private static final String providerId = "yandex";
+    private final Path cachePath = Paths.get(System.getProperty("user.home"), ".streamingmusicbmbf", "yandex");
+    private final YandexMusicClient yandexMusicClient;
 
-    private String token;
+    private boolean sync = false;
 
-    public YandexProvider(String providerName) {
-        super(providerName);
-        yandexMusicClient = new YandexMusicClient(token);
+    @Override
+    public boolean getSync() {
+        return sync;
     }
 
-    public List<BasePlaylist> getPlaylist() {
-        List<BasePlaylist> playlists = new ArrayList<>();
+    private String token = ""; // TODO: Implement token in settings
+
+    public YandexProvider(Path cachePath) {
+        cachePath = Paths.get(cachePath.toString(), providerId);
+        System.out.println("YandexProvider: " + cachePath);
+        yandexMusicClient = new YandexMusicClient(token);
+        yandexMusicClient.init();
+    }
+
+    private void loadConfig() {
+        Path configPath = Paths.get(cachePath.toString(), "config.json");
+        if (Files.exists(configPath)) {
+            try {
+                String config = Files.readString(configPath);
+                JSONObject configJson = new JSONObject(config);
+                token = configJson.getString("token");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    private void saveConfig() {
+        JSONObject configJson = new JSONObject();
+        configJson.put("token", token);
+        Path configPath = Paths.get(cachePath.toString(), "config.json");
+        try {
+            Files.writeString(configPath, configJson.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @Override
+    public String getProviderName() {
+        return providerName;
+    }
+
+    @Override
+    public ArrayList<BasePlaylist> getPlaylists() {
+        ArrayList<BasePlaylist> playlists = new ArrayList<>();
+        ArrayList<PlaylistsResponse.Playlist> ymPlaylist = yandexMusicClient.getPlaylists();
+        for (PlaylistsResponse.Playlist ymPlaylistItem : ymPlaylist) {
+            BasePlaylist playlist = new BasePlaylist();
+            playlist.setId(ymPlaylistItem.getPlaylistUuid());
+            playlist.setTitle(ymPlaylistItem.getTitle());
+            playlist.setImage("https://"+ymPlaylistItem.getOgImage().replace("%%", "400x400"));
+            playlists.add(playlist);
+        }
         return playlists;
     }
-    public List<BaseTrack> getTracks(String playlistId) {
-        List<BaseTrack> tracks = new ArrayList<>();
+
+    @Override
+    public ArrayList<BaseTrack> getTracks(String playlistId) {
+        ArrayList<BaseTrack> tracks = new ArrayList<>();
         return tracks;
     }
 
-    public String getConfig() {
-        return token;
-    }
-
-    public void setConfig(String config) {
-        this.token = config;
-    }
-
+    @Override
     public JPanel getSettingsPanel() {
         JPanel providerSettingsPanel = new JPanel();
         providerSettingsPanel.setBorder(BorderFactory.createTitledBorder("Настройки Яндекс.Музыка"));
@@ -56,6 +106,14 @@ public class YandexProvider extends AbstractProvider{
 //        providerSettingsPanel.add(tokenLabel);
 //        providerSettingsPanel.add(tokenField);
         return providerSettingsPanel;
+    }
+
+    public void sync() {
+
+    }
+
+    public Path getCachePath() {
+        return cachePath;
     }
 }
 

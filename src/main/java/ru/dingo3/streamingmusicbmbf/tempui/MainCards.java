@@ -1,7 +1,10 @@
 package ru.dingo3.streamingmusicbmbf.tempui;
 
+import ru.dingo3.streamingmusicbmbf.helpers.CachedImageIconDb;
+import ru.dingo3.streamingmusicbmbf.layouts.WrapLayout;
 import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
 import ru.dingo3.streamingmusicbmbf.providers.YandexProvider;
+import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 
 import javax.swing.*;
 //import javax.swing.border.AbstractBorder;
@@ -13,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 
@@ -21,6 +25,8 @@ public class MainCards extends JFrame implements ActionListener {
     private JPanel leftPanel;
     private JPanel cardPanel;
     private CardLayout cardLayout;
+
+    private final Path settingsPath = Path.of(System.getProperty("user.home"), ".streamingmusicbmbf");
 
     public MainCards() {
         setTitle("Main Cards");
@@ -31,14 +37,15 @@ public class MainCards extends JFrame implements ActionListener {
         leftPanel = new MusicPanelButtons(providers);
 
         // Create providers
-        providers.add(new YandexProvider("Yandex.Music"));
+        YandexProvider yandexProvider = new YandexProvider(settingsPath);
+        providers.add(yandexProvider);
 
 
         // Create the card panel with CardLayout
         cardPanel = new JPanel();
         cardLayout = new CardLayout();
         cardPanel.setLayout(cardLayout);
-        cardPanel.add(new CardBase(), "panel 1");
+        cardPanel.add(new CardBase(yandexProvider), "panel 1");
         cardPanel.add(new JLabel("Panel 2"), "panel 2");
         cardPanel.add(new JLabel("Panel 3"), "panel 3");
 
@@ -105,7 +112,7 @@ class MusicPanelButtons extends JPanel {
 }
 
 class CardBase extends JPanel {
-    public CardBase() {
+    public CardBase(AbstractProvider provider) {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         JPanel headerPanel = new JPanel() {
@@ -147,15 +154,24 @@ class CardBase extends JPanel {
         headerPanel.add(titleLabel, BorderLayout.WEST);
         headerPanel.add(rightLabel, BorderLayout.EAST);
 
+
         JPanel playlistPanel = new JPanel();
-        playlistPanel.setLayout(new FlowLayout());
+        JScrollPane playlistScrollPane = new JScrollPane(playlistPanel);
+        playlistScrollPane.getVerticalScrollBar().setUnitIncrement(25);
+        playlistScrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        playlistScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+//        playlistScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        playlistPanel.setLayout(new WrapLayout(FlowLayout.LEADING));
         playlistPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        playlistPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        playlistPanel.setAlignmentY(Component.TOP_ALIGNMENT);
-        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist2.jpg"));
-        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist2.jpg"));
-        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist2.jpg"));
-        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist1.jpg"));
+//        playlistPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+//        playlistPanel.setAlignmentY(Component.TOP_ALIGNMENT);
+
+        for (BasePlaylist playlist : provider.getPlaylists()) {
+            playlistPanel.add(new PlaylistPanel(playlist, provider));
+        }
+//        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist2.jpg"));
+//        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist2.jpg"));
+//        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist1.jpg"));
 
 
 
@@ -180,7 +196,7 @@ class CardBase extends JPanel {
         bottomPanel.add(performSyncButton, BorderLayout.EAST);
 
         add(headerPanel, BorderLayout.NORTH);
-        add(playlistPanel, BorderLayout.CENTER);
+        add(playlistScrollPane, BorderLayout.CENTER);
 //        add(new JLabel("Base Card"), BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
 
@@ -189,7 +205,9 @@ class CardBase extends JPanel {
 }
 
 class PlaylistPanel extends JPanel {
-    public PlaylistPanel(String title, String imagePath) {
+    public PlaylistPanel(BasePlaylist playlist, AbstractProvider provider) {
+        CachedImageIconDb cachedImageIconDb = new CachedImageIconDb(provider.getCachePath().toString());
+        ImageIcon imageIcon = cachedImageIconDb.getByUrlResized(playlist.getImage(), 160, 160);
         setBorder(BorderFactory.createEmptyBorder(10, 20, 15, 15));
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(200, 200));
@@ -198,7 +216,7 @@ class PlaylistPanel extends JPanel {
 //        setSize(new Dimension(150, 150));
 
         JLabel imageLabel = new JLabel();
-        imageLabel.setIcon(new ImageIcon(imagePath));
+        imageLabel.setIcon(imageIcon);
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         imageLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         imageLabel.setOpaque(true);
@@ -206,7 +224,7 @@ class PlaylistPanel extends JPanel {
         add(imageLabel, BorderLayout.CENTER);
 
         // Create and configure the title label
-        JLabel titleLabel = new JLabel(title);
+        JLabel titleLabel = new JLabel(playlist.getTitle());
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(titleLabel, BorderLayout.SOUTH);
 
