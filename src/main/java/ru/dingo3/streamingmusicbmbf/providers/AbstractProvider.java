@@ -4,26 +4,28 @@ import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
 
 import javax.swing.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractProvider {
-    private String providerName;
+public interface AbstractProvider {
 
-    public AbstractProvider(String providerName) {
-        this.providerName = providerName;
-    }
+//    public AbstractProvider(String providerName, Path cachePath) {
+//    }
+    boolean getSync();
 
-    public String getProviderName() {
-        return providerName;
-    }
+    void sync();
+    String getProviderName();
 
-    public abstract String getConfig();
+//    public abstract String getConfig();
 
-    public abstract void setConfig(String config);
+//    public abstract void setConfig(String config);
 
-    public abstract List<BasePlaylist> getPlaylist();
+    ArrayList<BasePlaylist> getPlaylists();
 
-    public abstract List<BaseTrack> getTracks(String playlistId);
+    ArrayList<BaseTrack> getTracks(String playlistId);
 
-    public abstract JPanel getSettingsPanel();
+    JPanel getSettingsPanel();
+
+    Path getCachePath();
 }

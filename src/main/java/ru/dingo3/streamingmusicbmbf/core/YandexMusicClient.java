@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.security.*;
 
@@ -83,11 +84,11 @@ public class YandexMusicClient {
     }
 
     //    public Array<Playlist> getPlaylists() {
-    public List<Playlist> getPlaylists() {
+    public ArrayList<Playlist> getPlaylists() {
         return this.getPlaylists(this.me.getUid());
     }
 
-    public List<Playlist> getPlaylists(int userId) {
+    public ArrayList<Playlist> getPlaylists(int userId) {
         String url = this.baseUrl + "/users/" + userId + "/playlists/list";
 
         try {
@@ -97,7 +98,7 @@ public class YandexMusicClient {
 
             ObjectMapper objectMapper = new ObjectMapper();
 
-            List<Playlist> playlists = objectMapper.readValue(response, PlaylistsResponse.class).getResult();
+            ArrayList<Playlist> playlists = objectMapper.readValue(response, PlaylistsResponse.class).getResult();
             // print all names
 //            for (Playlist playlist : playlists) {
 //                System.out.println(playlist.getTitle());
