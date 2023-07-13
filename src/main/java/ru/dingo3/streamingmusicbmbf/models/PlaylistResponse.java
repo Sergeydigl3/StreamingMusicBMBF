@@ -45,12 +45,13 @@ public class PlaylistResponse {
         private int durationMs;
         private Cover cover;
         private String ogImage;
-        private ArrayList<Track> tracks;
+        private List<Track> tracks;
         private List<Object> tags;
         private int likesCount;
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Owner {
         private int uid;
         private String login;
@@ -60,6 +61,7 @@ public class PlaylistResponse {
     }
 
     @Data
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Cover {
         private String type;
@@ -70,6 +72,7 @@ public class PlaylistResponse {
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Track {
         private int id;
         private TrackDetails track;
@@ -111,18 +114,21 @@ public class PlaylistResponse {
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Major {
         private int id;
         private String name;
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class R128 {
         private double i;
         private double tp;
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Fade {
         private double inStart;
         private double inStop;
@@ -131,6 +137,7 @@ public class PlaylistResponse {
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Artist {
         private int id;
         private String name;
@@ -170,18 +177,21 @@ public class PlaylistResponse {
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Label {
         private int id;
         private String name;
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TrackPosition {
         private int volume;
         private int index;
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class LyricsInfo {
         private boolean hasAvailableSyncLyrics;
         private boolean hasAvailableTextLyrics;

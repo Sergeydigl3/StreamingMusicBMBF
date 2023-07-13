@@ -1,5 +1,6 @@
 package ru.dingo3.streamingmusicbmbf.ui;
 
+import ru.dingo3.streamingmusicbmbf.helpers.CachedImageIconDb;
 import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
@@ -45,6 +46,8 @@ public class PlaylistApp extends JDialog {
     private PlaylistContent content;
     private PlaylistContent content2;
 
+//    private CachedImageIconDb cashedImageIconDb;
+
     public PlaylistApp(AbstractProvider provider, BasePlaylist playlist) {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(800, 400));
@@ -57,7 +60,7 @@ public class PlaylistApp extends JDialog {
 
 //        panel.setLayout(new javax.swing.BoxLayout(panel, javax.swing.BoxLayout.PAGE_AXIS));
 
-        header = new PlaylistHeader();
+        header = new PlaylistHeader(provider, playlist);
         panel.add(header);
 
         JSeparator separator = new JSeparator();
@@ -72,7 +75,7 @@ public class PlaylistApp extends JDialog {
 
         if (providerTracks != null) {
             for (BaseTrack track : providerTracks) {
-                musicList.addRow(track.getTitle(), track.getArtist(), "STATUS", false);
+                musicList.addRow(track.getTitle(), track.getArtist(), "", false);
             }
         }
 //        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
@@ -91,7 +94,8 @@ public class PlaylistApp extends JDialog {
                     break;
                 }
             }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+                 javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(PlaylistApp.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
 
@@ -105,12 +109,9 @@ class PlaylistHeader extends JPanel {
     private JPanel playlistInfo;
     private JButton syncButton;
     private JButton downloadButton;
+    CachedImageIconDb cachedImageIconDb;
 
-    public PlaylistHeader() {
-        initComponents();
-    }
-
-    private void initComponents() {
+    public PlaylistHeader(AbstractProvider provider, BasePlaylist playlist) {
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
         setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
@@ -121,10 +122,13 @@ class PlaylistHeader extends JPanel {
         playlistInfo.setLayout(new javax.swing.BoxLayout(playlistInfo, javax.swing.BoxLayout.LINE_AXIS));
         playlistInfo.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
 
-        ImageIcon playlistImage = new ImageIcon("playlist1.jpg");
-        Image scaledImage = playlistImage.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
-        ImageIcon scaledPlaylistImage = new ImageIcon(scaledImage);
-        JLabel playlistImageLabel = new JLabel(scaledPlaylistImage);
+        cachedImageIconDb = new CachedImageIconDb(provider.getCachePath().toString());
+
+//        ImageIcon playlistImage = new ImageIcon("playlist1.jpg");
+//        ImageIcon playlistImage = cachedImageIconDb.getByUrlResized(playlist.getImage(), 150,150);
+//        Image scaledImage = playlistImage.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+//        ImageIcon scaledPlaylistImage = new ImageIcon(scaledImage);
+        JLabel playlistImageLabel = new JLabel(cachedImageIconDb.getByUrlResized(playlist.getImage(), 150, 150));
 //        RoundedImageExample playlistImageLabel = new RoundedImageExample();
         playlistImageLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
 //        JButton jButton3 = new JButton();
@@ -142,12 +146,14 @@ class PlaylistHeader extends JPanel {
 
         JLabel jLabel2 = new JLabel();
         jLabel2.setFont(new java.awt.Font("Segoe UI", Font.BOLD, 40));
-        jLabel2.setText("My cool playlist");
+//        jLabel2.setText("My cool playlist");
+        jLabel2.setText(playlist.getTitle());
         jLabel2.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         textPlaylistInfo.add(jLabel2);
 
         JLabel jLabel3 = new JLabel();
-        jLabel3.setText("* 4 tracks");
+        jLabel3.setText("* " + playlist.getMusicCount() + " tracks");
+//        jLabel3.setText("* 4 tracks");
 //        jLabel3.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         textPlaylistInfo.add(jLabel3);
 

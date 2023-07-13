@@ -235,7 +235,7 @@ class PlaylistPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // Open playlist
-                System.out.println("Clicked on playlist " + playlist.getTitle());
+                System.out.println("Clicked on playlist " + playlist.getId());
 
                 JDialog dialog = new PlaylistApp(provider, playlist);
                 dialog.setVisible(true);

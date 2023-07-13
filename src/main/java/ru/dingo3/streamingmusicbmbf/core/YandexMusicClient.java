@@ -50,7 +50,6 @@ public class YandexMusicClient {
 
     public YandexMusicClient(String token) {
         this.token = token;
-
     }
 
     public void init() {
@@ -95,7 +94,7 @@ public class YandexMusicClient {
             String response = this.request.sendGet(url);
 
             JSONObject jsonObject = new JSONObject(response);
-
+            System.out.println(response);
             ObjectMapper objectMapper = new ObjectMapper();
 
             ArrayList<Playlist> playlists = objectMapper.readValue(response, PlaylistsResponse.class).getResult();
@@ -120,27 +119,29 @@ public class YandexMusicClient {
     }
 
 
-    public ArrayList<Track> getPlaylistTracks(String playlistId, int userId) {
+    public List<PlaylistResponse.Track> getPlaylistTracks(String playlistId, int userId) {
         String url = this.baseUrl + "/users/" + userId + "/playlists/" + playlistId;
 
         try {
             String response = this.request.sendGet(url);
-
+            System.out.println(response);
             ObjectMapper objectMapper = new ObjectMapper();
 
+            List<PlaylistResponse.Track> tracks = objectMapper.readValue(response, PlaylistResponse.class).getResult().getTracks();
             // print all names
+            System.out.println(tracks);
 //            for (Track track : tracks) {
 //                System.out.println(track.getTrack().getTitle() + " - " + track.getTrack().getArtists().get(0).getName() + " - " + track.getTrack().getId());
 //            }
-            return objectMapper.readValue(response, PlaylistResponse.class).getResult().getTracks();
+            return tracks;
         } catch (Exception e) {
             System.out.println(e);
         }
-
+        System.out.println("TRIGGERED EXCEPTION");
         return null;
     }
 
-    public ArrayList<Track> getPlaylistTracks(String playlistId) {
+    public List<PlaylistResponse.Track> getPlaylistTracks(String playlistId) {
         return this.getPlaylistTracks(playlistId, this.me.getUid());
     }
 
@@ -202,6 +203,7 @@ public class YandexMusicClient {
     }
 
     public static void main(String[] args) {
+        System.setProperty("console.encoding", "cp1251");
         String token = System.getenv("YM_TOKEN");
         YandexMusicClient client = new YandexMusicClient(token);
 
@@ -216,10 +218,25 @@ public class YandexMusicClient {
             System.out.println(playlist.getOgImage());
             System.out.println("\n");
         }
-        client.getPlaylistTracks("1020");
+
+        List<Track> playlistTracksTest = client.getPlaylistTracks("1023");
+        if (playlistTracksTest == null)
+            System.out.println("GG BB");
+        else {
+            for (Track track : playlistTracksTest) {
+                System.out.println(
+                        track.getTrack()+ " - "
+                );
+            }
+        }
 
 
-        client.downloadTrack(84010387, Paths.get("C:\\Projects\\suai\\StreamingMusicBMBF\\cache\\music\\84010387.mp3"));
+//        for (Track track : client.getPlaylistTracks("1023")) {
+//            System.out.println(track.getTrack().getTitle() + " - " + track.getTrack().getArtists().get(0).getName() + " - " + track.getTrack().getId());
+//        }
+
+
+//        client.downloadTrack(84010387, Paths.get("C:\\Projects\\suai\\StreamingMusicBMBF\\cache\\music\\84010387.mp3"));
 
     }
 }

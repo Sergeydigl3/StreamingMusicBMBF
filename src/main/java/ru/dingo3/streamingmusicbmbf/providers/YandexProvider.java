@@ -31,9 +31,10 @@ public class YandexProvider implements AbstractProvider {
         return sync;
     }
 
-    private String token = ""; // TODO: Implement token in settings
+    private String token; // TODO: Implement token in settings
 
     public YandexProvider(Path cachePath) {
+        token = System.getenv("YM_TOKEN"); // TODO: Remove env set
         cachePath = Paths.get(cachePath.toString(), providerId);
         System.out.println("YandexProvider: " + cachePath);
         yandexMusicClient = new YandexMusicClient(token);
@@ -76,9 +77,10 @@ public class YandexProvider implements AbstractProvider {
         }
         for (PlaylistsResponse.Playlist ymPlaylistItem : ymPlaylist) {
             BasePlaylist playlist = new BasePlaylist();
-            playlist.setId(ymPlaylistItem.getPlaylistUuid());
+            playlist.setId(Integer.toString(ymPlaylistItem.getKind()));
             playlist.setTitle(ymPlaylistItem.getTitle());
             playlist.setImage("https://"+ymPlaylistItem.getOgImage().replace("%%", "400x400"));
+            playlist.setMusicCount(ymPlaylistItem.getTrackCount());
             playlists.add(playlist);
         }
         return playlists;
@@ -87,12 +89,12 @@ public class YandexProvider implements AbstractProvider {
     @Override
     public ArrayList<BaseTrack> getTracks(String playlistId) {
         ArrayList<BaseTrack> tracks = new ArrayList<>();
-        ArrayList<PlaylistResponse.Track> ymTracks = yandexMusicClient.getPlaylistTracks(playlistId);
-        if (ymTracks == null) {
+        java.util.List<PlaylistResponse.Track> ymTracks = yandexMusicClient.getPlaylistTracks(playlistId);
+        if (ymTracks != null) {
             for (PlaylistResponse.Track ymTrack : ymTracks) {
                 BaseTrack track = new BaseTrack();
                 track.setId(ymTrack.getId());
-                track.setTitle(ymTrack.getTrack().getId());
+                track.setTitle(ymTrack.getTrack().getTitle());
                 track.setArtist(ymTrack.getTrack().getArtists().get(0).getName());
 
 
@@ -100,6 +102,7 @@ public class YandexProvider implements AbstractProvider {
                 tracks.add(track);
             }
         }
+//        System.out.println("YandexProvider: getTracks: " + tracks.size());
         return tracks;
     }
 
