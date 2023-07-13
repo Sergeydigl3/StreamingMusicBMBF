@@ -79,7 +79,12 @@ public class YandexProvider implements AbstractProvider {
             BasePlaylist playlist = new BasePlaylist();
             playlist.setId(Integer.toString(ymPlaylistItem.getKind()));
             playlist.setTitle(ymPlaylistItem.getTitle());
-            playlist.setImage("https://"+ymPlaylistItem.getOgImage().replace("%%", "400x400"));
+            System.out.println("YandexProvider: getPlaylists: " + ymPlaylistItem.getOgImage());
+            if (ymPlaylistItem.getOgImage().isEmpty())
+                playlist.setImage("https://raw.githubusercontent.com/Sergeydigl3/StreamingMusicBMBF/main/playlist1.jpg");
+            else
+                playlist.setImage("https://"+ymPlaylistItem.getOgImage().replace("%%", "400x400"));
+
             playlist.setMusicCount(ymPlaylistItem.getTrackCount());
             playlists.add(playlist);
         }
