@@ -10,12 +10,17 @@ import java.util.List;
 
 public interface AbstractProvider {
 
+//    String getProviderName();
+
+    String getProviderName();
+
+    String getProviderId();
+
 //    public AbstractProvider(String providerName, Path cachePath) {
 //    }
     boolean getSync();
 
     void sync();
-    String getProviderName();
 
 //    public abstract String getConfig();
 

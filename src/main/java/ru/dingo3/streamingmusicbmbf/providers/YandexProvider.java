@@ -16,12 +16,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.ArrayList;
+
 
 public class YandexProvider implements AbstractProvider {
+
     private static final String providerName = "Yandex.Music";
+
     private static final String providerId = "yandex";
-    private final Path cachePath = Paths.get(System.getProperty("user.home"), ".streamingmusicbmbf", "yandex");
+    private Path cachePath;
     private final YandexMusicClient yandexMusicClient;
 
     private boolean sync = false;
@@ -35,7 +37,7 @@ public class YandexProvider implements AbstractProvider {
 
     public YandexProvider(Path cachePath) {
         token = System.getenv("YM_TOKEN"); // TODO: Remove env set
-        cachePath = Paths.get(cachePath.toString(), providerId);
+        this.cachePath = Paths.get(cachePath.toString(), providerId);
         System.out.println("YandexProvider: " + cachePath);
         yandexMusicClient = new YandexMusicClient(token);
         yandexMusicClient.init();
@@ -69,6 +71,11 @@ public class YandexProvider implements AbstractProvider {
     }
 
     @Override
+    public String getProviderId() {
+        return providerId;
+    }
+
+    @Override
     public ArrayList<BasePlaylist> getPlaylists() {
         ArrayList<BasePlaylist> playlists = new ArrayList<>();
         ArrayList<PlaylistsResponse.Playlist> ymPlaylist = yandexMusicClient.getPlaylists();
@@ -80,7 +87,11 @@ public class YandexProvider implements AbstractProvider {
             playlist.setId(Integer.toString(ymPlaylistItem.getKind()));
             playlist.setTitle(ymPlaylistItem.getTitle());
             System.out.println("YandexProvider: getPlaylists: " + ymPlaylistItem.getOgImage());
-            if (ymPlaylistItem.getOgImage().isEmpty())
+            if (
+                    ymPlaylistItem.getOgImage().isEmpty()
+                    || ymPlaylistItem.getOgImage().equals("avatars.yandex.net/get-music-user-playlist/27701/273593788.1029.15216/%%?1662069740465")
+                    || ymPlaylistItem.getOgImage().equals("avatars.yandex.net/get-music-user-playlist/69910/273593788.1025.6885/%%?1654365788995")
+            )
                 playlist.setImage("https://raw.githubusercontent.com/Sergeydigl3/StreamingMusicBMBF/main/playlist1.jpg");
             else
                 playlist.setImage("https://"+ymPlaylistItem.getOgImage().replace("%%", "400x400"));

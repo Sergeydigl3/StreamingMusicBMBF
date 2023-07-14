@@ -36,6 +36,9 @@ public class ProviderManager {
     }
 
     public void startSync() {
+        if (syncState) return;
+
+        syncState = true;
         syncThread = new Thread(() -> {
             while (syncState) {
                 for (AbstractProvider provider : providers) {

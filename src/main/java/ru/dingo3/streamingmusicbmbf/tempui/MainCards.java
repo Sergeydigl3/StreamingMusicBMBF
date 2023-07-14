@@ -16,12 +16,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Line2D;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
 
-public class MainCards extends JFrame implements ActionListener {
+public class MainCards extends JFrame {
+    private Image logo;
     private final java.util.List<AbstractProvider> providers = new ArrayList<>();
     private JPanel leftPanel;
     private JPanel cardPanel;
@@ -30,12 +30,13 @@ public class MainCards extends JFrame implements ActionListener {
     private final Path settingsPath = Path.of(System.getProperty("user.home"), ".streamingmusicbmbf");
 
     public MainCards() {
+        // Load the logo image.
+        logo = Toolkit.getDefaultToolkit().getImage("media/logo2.png");
+        setIconImage(logo);
         setTitle("Main Cards");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(1000, 600));
-        // Create the button panel
-        leftPanel = new MusicPanelButtons(providers);
 
         // Create providers
         YandexProvider yandexProvider = new YandexProvider(settingsPath);
@@ -46,10 +47,17 @@ public class MainCards extends JFrame implements ActionListener {
         cardPanel = new JPanel();
         cardLayout = new CardLayout();
         cardPanel.setLayout(cardLayout);
-        cardPanel.add(new CardBase(yandexProvider), "panel 1");
-        cardPanel.add(new JLabel("Panel 2"), "panel 2");
-        cardPanel.add(new JLabel("Panel 3"), "panel 3");
+        cardPanel.add(new HomeCard(), "home");
 
+        for (AbstractProvider provider : providers) {
+            cardPanel.add(new BaseCard(provider), provider.getProviderId());
+        }
+//        cardPanel.add(new BaseCard(yandexProvider), "panel 1");
+//        cardPanel.add(new JLabel("Panel 2"), "panel 2");
+//        cardPanel.add(new JLabel("Panel 3"), "panel 3");
+        // Create the button panel
+
+        leftPanel = new MusicPanelButtons(providers, cardLayout, cardPanel);
         add(leftPanel, BorderLayout.WEST);
 
 //        JSeparator separator = new JSeparator();
@@ -63,12 +71,12 @@ public class MainCards extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
-        System.out.println(command);
-        cardLayout.show(cardPanel, command.toLowerCase());
-    }
+//    @Override
+//    public void actionPerformed(ActionEvent e) {
+//        String command = e.getActionCommand();
+//        System.out.println(command);
+//        cardLayout.show(cardPanel, command.toLowerCase());
+//    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainCards::new);
@@ -77,20 +85,51 @@ public class MainCards extends JFrame implements ActionListener {
 
 class MusicPanelButtons extends JPanel {
     private static SettingsDialog settingsDialog;
-    public MusicPanelButtons(java.util.List<AbstractProvider> providers) {
+
+    public MusicPanelButtons(java.util.List<AbstractProvider> providers, CardLayout cardLayout, JPanel cardPanel) {
         setLayout(new BorderLayout());
 
+        // Create the button panel
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
         buttonsPanel.setBorder(BorderFactory.createEmptyBorder(40, 10, 10, 10)); // Отступы по краям
 
-        JButton yandexCardButton = new JButton("Yandex Music");
+
+        // Create home button
+        JButton homeCardButton = new JButton("Home");
+        homeCardButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(cardPanel, "home");
+            }
+        });
+        buttonsPanel.add(homeCardButton);
+
+        // Create buttons for each provider
+        for (AbstractProvider provider : providers) {
+            JButton providerButton = new JButton(provider.getProviderName());
+            providerButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    System.out.println(provider.getProviderId());
+                    cardLayout.show(cardPanel, provider.getProviderId());
+                }
+            });
+            buttonsPanel.add(providerButton);
+        }
+
+//        JButton yandexCardButton = new JButton("Yandex Music");
         JButton youtubeCardButton = new JButton("Youtube Music");
         JButton localMusicCardButton = new JButton("Local Music");
+//        homeCardButton.addActionListener(this);
+//        yandexCardButton.addActionListener(this);
+//        youtubeCardButton.addActionListener(this);
+//        localMusicCardButton.addActionListener(this);
 
-        buttonsPanel.add(yandexCardButton);
+
+//        buttonsPanel.add(yandexCardButton);
         buttonsPanel.add(youtubeCardButton);
         buttonsPanel.add(localMusicCardButton);
+
+
 
         JPanel statusSettingsPanel = new JPanel();
         statusSettingsPanel.setLayout(new BoxLayout(statusSettingsPanel, BoxLayout.Y_AXIS));
@@ -112,8 +151,8 @@ class MusicPanelButtons extends JPanel {
     }
 }
 
-class CardBase extends JPanel {
-    public CardBase(AbstractProvider provider) {
+class HomeCard extends JPanel {
+    public HomeCard() {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         JPanel headerPanel = new JPanel() {
@@ -130,26 +169,75 @@ class CardBase extends JPanel {
         headerPanel.setBorder(new EmptyBorder(15, 0, 14, 0));
         headerPanel.setLayout(new BorderLayout());
 
-//        Border dashedBorder = BorderFactory.createStrokeBorder(new BasicStroke(1, BasicStroke.CAP_BUTT,
-//                BasicStroke.JOIN_MITER, 1, new float[] { 5, 5 }, 0), Color.BLACK);
-//        Border emptyBorder = BorderFactory.createEmptyBorder(5, 0, 5, 0);
 
-//        headerPanel.setBorder(new CompoundBorder(
-//                        BorderFactory.createStrokeBorder(new BasicStroke(1, BasicStroke.CAP_BUTT,
-//                                BasicStroke.JOIN_MITER, 1, new float[]{5, 5}, 0), Color.BLACK)
-//                        ,
-//                        BorderFactory.createEmptyBorder(5, 0, 5, 0)
-//                )
-//        );
+        JLabel titleLabel = new JLabel("This is a home page");
+        JLabel rightLabel = new JLabel("v0.1");
+        headerPanel.add(titleLabel, BorderLayout.WEST);
+        headerPanel.add(rightLabel, BorderLayout.EAST);
 
-//        headerPanel.setBorder(
-//                new BottomDashedBorder(Color.lightGray, 2, 2)
+
+        JPanel AppInfo = new JPanel();
+        JScrollPane playlistScrollPane = new JScrollPane(AppInfo);
+        playlistScrollPane.getVerticalScrollBar().setUnitIncrement(25);
+        playlistScrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        playlistScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+//        playlistScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+//        playlistPanel.setLayout(new WrapLayout(FlowLayout.LEADING));
+        AppInfo.setLayout(new BoxLayout(AppInfo, BoxLayout.Y_AXIS));
+
+        AppInfo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+
+
+
+//        JPanel bottomPanel = new JPanel();
+//        bottomPanel.setLayout(new BorderLayout());
+//        bottomPanel.setBorder(
 //                new CompoundBorder(
-//                        new BottomDashedBorder(Color.lightGray, 1, 5),
+//                        BorderFactory.createMatteBorder(1, 0, 0, 0, Color.lightGray),
 //                        BorderFactory.createEmptyBorder(5, 5, 5, 5)
 //
 //                )
+////                BorderFactory.createMatteBorder(1, 0, 0, 0, Color.lightGray)
 //        );
+//
+//        JCheckBox checkBox = new JCheckBox("Enable background sync: ");
+//        checkBox.setHorizontalTextPosition(SwingConstants.LEFT);
+//
+//        JButton performSyncButton = new JButton("Perform sync");
+////        performSyncButton.setPreferredSize(new Dimension(100, 20));
+//
+//        bottomPanel.add(checkBox, BorderLayout.WEST);
+//        bottomPanel.add(performSyncButton, BorderLayout.EAST);
+
+        add(headerPanel, BorderLayout.NORTH);
+        add(playlistScrollPane, BorderLayout.CENTER);
+//        add(new JLabel("Base Card"), BorderLayout.CENTER);
+//        add(bottomPanel, BorderLayout.SOUTH);
+
+
+    }
+}
+
+class BaseCard extends JPanel {
+    public BaseCard(AbstractProvider provider) {
+        setLayout(new BorderLayout());
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel headerPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setStroke(new BasicStroke(1.5F, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 12, new float[]{8}, 3));
+                g2d.setColor(Color.BLACK);
+                g2d.drawLine(0, getHeight() - 1, getWidth(), getHeight() - 1);
+                g2d.dispose();
+            }
+        };
+        headerPanel.setBorder(new EmptyBorder(15, 0, 14, 0));
+        headerPanel.setLayout(new BorderLayout());
+
+
         JLabel titleLabel = new JLabel("You are logged in as SomeUser");
         JLabel rightLabel = new JLabel("Total playlist: 123");
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -175,7 +263,6 @@ class CardBase extends JPanel {
 //        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist2.jpg"));
 //        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist2.jpg"));
 //        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist1.jpg"));
-
 
 
         JPanel bottomPanel = new JPanel();
@@ -283,7 +370,7 @@ class SettingsDialog extends JDialog {
 //        syncPanel.add(performSyncButton, BorderLayout.EAST);
 
 
-        for (AbstractProvider provider: providers){
+        for (AbstractProvider provider : providers) {
 //            JPanel providerPanel = new JPanel();
 //            providerPanel.setLayout(new BorderLayout());
 //            providerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
