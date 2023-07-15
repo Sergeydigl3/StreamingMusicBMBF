@@ -4,9 +4,12 @@ import ru.dingo3.streamingmusicbmbf.helpers.CachedImageIconDb;
 import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
+import ru.dingo3.streamingmusicbmbf.ui.components.DashedRoundedButton;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
@@ -107,7 +110,7 @@ public class PlaylistApp extends JDialog {
 
 class PlaylistHeader extends JPanel {
     private JPanel playlistInfo;
-    private JButton syncButton;
+    private DashedRoundedButton syncButton;
     private JButton downloadButton;
     CachedImageIconDb cachedImageIconDb;
 
@@ -165,13 +168,24 @@ class PlaylistHeader extends JPanel {
         playlistActions.setAlignmentX(Component.LEFT_ALIGNMENT);
         playlistActions.setLayout(new javax.swing.BoxLayout(playlistActions, javax.swing.BoxLayout.LINE_AXIS));
 
-        syncButton = new JButton();
-        syncButton.setText("Sync enabled");
+        syncButton = new DashedRoundedButton("Sync disabled");
+        syncButton.setSelected(false);
+        syncButton.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (syncButton.getModel().isSelected()) {
+                    syncButton.setText("Sync enabled");
+                } else {
+                    syncButton.setText("Sync disabled");
+                }
+            }
+        });
+//        syncButton.setText();
         playlistActions.add(syncButton);
 
-        downloadButton = new JButton();
-        downloadButton.setText("Download");
-        playlistActions.add(downloadButton);
+//        downloadButton = new JButton();
+//        downloadButton.setText("Download");
+//        playlistActions.add(downloadButton);
 
         add(playlistActions);
     }

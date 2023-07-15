@@ -2,8 +2,10 @@ package ru.dingo3.streamingmusicbmbf.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import javax.swing.border.Border;
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 class DashedRoundedButton extends JToggleButton {
     private int arcWidth = 20;
     private int arcHeight = 20;
@@ -101,6 +103,20 @@ public class Main extends JFrame {
         buttonGroup.add(button1);
         buttonGroup.add(button2);
         buttonGroup.add(button3);
+
+        ActionListener actionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Selected: " + ((DashedRoundedButton) e.getSource()).getText());
+            }
+        };
+
+        button1.addActionListener(actionListener);
+        button2.addActionListener(actionListener);
+        button3.addActionListener(actionListener);
+        // print button group on change
+
+//        System.out.println(buttonGroup.getSelection());
 
         // JButton button1 = createStyledButton("Button 1");
         // JButton button2 = createStyledButton("Button 2");

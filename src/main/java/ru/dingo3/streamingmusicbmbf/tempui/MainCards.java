@@ -6,9 +6,11 @@ import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
 import ru.dingo3.streamingmusicbmbf.providers.YandexProvider;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.ui.PlaylistApp;
+import ru.dingo3.streamingmusicbmbf.ui.components.DashedRoundedButton;
+import ru.dingo3.streamingmusicbmbf.ui.components.DashedRoundedSimpleButton;
 
 import javax.swing.*;
-//import javax.swing.border.AbstractBorder;
+
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -71,12 +73,6 @@ public class MainCards extends JFrame {
         setVisible(true);
     }
 
-//    @Override
-//    public void actionPerformed(ActionEvent e) {
-//        String command = e.getActionCommand();
-//        System.out.println(command);
-//        cardLayout.show(cardPanel, command.toLowerCase());
-//    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainCards::new);
@@ -94,31 +90,39 @@ class MusicPanelButtons extends JPanel {
         buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
         buttonsPanel.setBorder(BorderFactory.createEmptyBorder(40, 10, 10, 10)); // Отступы по краям
 
+        ButtonGroup buttonGroup = new ButtonGroup();
 
         // Create home button
-        JButton homeCardButton = new JButton("Home");
+        DashedRoundedButton homeCardButton = new DashedRoundedButton("Home");
         homeCardButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(cardPanel, "home");
             }
         });
-        buttonsPanel.add(homeCardButton);
 
+        buttonsPanel.add(homeCardButton);
+        buttonGroup.add(homeCardButton);
+        buttonsPanel.add(Box.createVerticalStrut(20));
         // Create buttons for each provider
         for (AbstractProvider provider : providers) {
-            JButton providerButton = new JButton(provider.getProviderName());
+            DashedRoundedButton providerButton = new DashedRoundedButton(provider.getProviderName());
             providerButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     System.out.println(provider.getProviderId());
                     cardLayout.show(cardPanel, provider.getProviderId());
                 }
             });
+            buttonsPanel.add(Box.createVerticalStrut(10));
             buttonsPanel.add(providerButton);
+            buttonGroup.add(providerButton);
         }
 
 //        JButton yandexCardButton = new JButton("Yandex Music");
-        JButton youtubeCardButton = new JButton("Youtube Music");
-        JButton localMusicCardButton = new JButton("Local Music");
+
+        DashedRoundedButton youtubeCardButton = new DashedRoundedButton("Youtube Music");
+        DashedRoundedButton localMusicCardButton = new DashedRoundedButton("Local Music");
+
+
 //        homeCardButton.addActionListener(this);
 //        yandexCardButton.addActionListener(this);
 //        youtubeCardButton.addActionListener(this);
@@ -126,25 +130,28 @@ class MusicPanelButtons extends JPanel {
 
 
 //        buttonsPanel.add(yandexCardButton);
+        buttonsPanel.add(Box.createVerticalStrut(20));
         buttonsPanel.add(youtubeCardButton);
+        buttonsPanel.add(Box.createVerticalStrut(20));
         buttonsPanel.add(localMusicCardButton);
 
-
+        buttonGroup.add(youtubeCardButton);
+        buttonGroup.add(localMusicCardButton);
 
         JPanel statusSettingsPanel = new JPanel();
         statusSettingsPanel.setLayout(new BoxLayout(statusSettingsPanel, BoxLayout.Y_AXIS));
 
-        JButton settingsButton = new JButton("Settings");
+        DashedRoundedSimpleButton settingsButton = new DashedRoundedSimpleButton("Settings");
         settingsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 settingsDialog = new SettingsDialog(providers);
                 settingsDialog.setVisible(true);
             }
         });
-        JButton statusButton = new JButton("Status");
+//        JButton statusButton = new JButton("Status");
 
         statusSettingsPanel.add(settingsButton);
-        statusSettingsPanel.add(statusButton);
+//        statusSettingsPanel.add(statusButton);
 
         add(buttonsPanel, BorderLayout.NORTH);
         add(statusSettingsPanel, BorderLayout.SOUTH);
@@ -279,7 +286,8 @@ class BaseCard extends JPanel {
         JCheckBox checkBox = new JCheckBox("Enable background sync: ");
         checkBox.setHorizontalTextPosition(SwingConstants.LEFT);
 
-        JButton performSyncButton = new JButton("Perform sync");
+//        JButton performSyncButton = new JButton("Perform sync");
+        DashedRoundedSimpleButton performSyncButton = new DashedRoundedSimpleButton("Perform sync");
 //        performSyncButton.setPreferredSize(new Dimension(100, 20));
 
         bottomPanel.add(checkBox, BorderLayout.WEST);
