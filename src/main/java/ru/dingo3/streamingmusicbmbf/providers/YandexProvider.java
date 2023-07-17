@@ -1,6 +1,7 @@
 package ru.dingo3.streamingmusicbmbf.providers;
 
 import com.fasterxml.jackson.databind.ser.Serializers;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
@@ -11,11 +12,12 @@ import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class YandexProvider implements AbstractProvider {
@@ -55,6 +57,7 @@ public class YandexProvider implements AbstractProvider {
             }
         }
     }
+
     private void saveConfig() {
         JSONObject configJson = new JSONObject();
         configJson.put("token", token);
@@ -65,6 +68,7 @@ public class YandexProvider implements AbstractProvider {
             e.printStackTrace();
         }
     }
+
     @Override
     public String getProviderName() {
         return providerName;
@@ -89,12 +93,12 @@ public class YandexProvider implements AbstractProvider {
             System.out.println("YandexProvider: getPlaylists: " + ymPlaylistItem.getOgImage());
             if (
                     ymPlaylistItem.getOgImage().isEmpty()
-                    || ymPlaylistItem.getOgImage().equals("avatars.yandex.net/get-music-user-playlist/27701/273593788.1029.15216/%%?1662069740465")
-                    || ymPlaylistItem.getOgImage().equals("avatars.yandex.net/get-music-user-playlist/69910/273593788.1025.6885/%%?1654365788995")
+                            || ymPlaylistItem.getOgImage().equals("avatars.yandex.net/get-music-user-playlist/27701/273593788.1029.15216/%%?1662069740465")
+                            || ymPlaylistItem.getOgImage().equals("avatars.yandex.net/get-music-user-playlist/69910/273593788.1025.6885/%%?1654365788995")
             )
                 playlist.setImage("https://raw.githubusercontent.com/Sergeydigl3/StreamingMusicBMBF/main/playlist1.jpg");
             else
-                playlist.setImage("https://"+ymPlaylistItem.getOgImage().replace("%%", "400x400"));
+                playlist.setImage("https://" + ymPlaylistItem.getOgImage().replace("%%", "400x400"));
 
             playlist.setMusicCount(ymPlaylistItem.getTrackCount());
             playlists.add(playlist);
@@ -153,3 +157,10 @@ public class YandexProvider implements AbstractProvider {
     }
 }
 
+
+@Data
+class YandexProviderConfig {
+    private String token;
+    private Boolean syncState;
+    private List<Boolean> syncPlaylistsState;
+}

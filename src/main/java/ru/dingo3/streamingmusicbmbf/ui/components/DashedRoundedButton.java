@@ -1,9 +1,17 @@
 package ru.dingo3.streamingmusicbmbf.ui.components;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class DashedRoundedButton extends JToggleButton {
+
+    @Setter
+    @Getter
+    private String buttonId = "default";
+
     private int arcWidth = 20;
     private int arcHeight = 20;
 
@@ -25,6 +33,12 @@ public class DashedRoundedButton extends JToggleButton {
     //    public DashedRoundedButton(String text, int width, int height) {
 //        this(text, width, height);
 //    }
+
+    public DashedRoundedButton(String text, String buttonId) {
+        this(text, 20, 20, 20, 20);
+        this.buttonId = buttonId;
+    }
+
     public DashedRoundedButton(String text) {
         this(text, 20, 20, 20, 20);
     }

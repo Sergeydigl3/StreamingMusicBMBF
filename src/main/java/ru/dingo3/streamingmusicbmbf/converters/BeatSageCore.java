@@ -1,11 +1,9 @@
-package ru.dingo3.streamingmusicbmbf.core;
+package ru.dingo3.streamingmusicbmbf.converters;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.AllArgsConstructor;
 import ru.dingo3.streamingmusicbmbf.network.HttpRequest;
-
-import java.util.Objects;
 
 @Setter
 @Getter

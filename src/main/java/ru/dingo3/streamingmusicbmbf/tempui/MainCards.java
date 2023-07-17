@@ -1,5 +1,6 @@
 package ru.dingo3.streamingmusicbmbf.tempui;
 
+import ru.dingo3.streamingmusicbmbf.helpers.AppSettings;
 import ru.dingo3.streamingmusicbmbf.helpers.CachedImageIconDb;
 import ru.dingo3.streamingmusicbmbf.layouts.WrapLayout;
 import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
@@ -13,13 +14,16 @@ import javax.swing.*;
 
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 public class MainCards extends JFrame {
@@ -29,9 +33,9 @@ public class MainCards extends JFrame {
     private JPanel cardPanel;
     private CardLayout cardLayout;
 
-    private final Path settingsPath = Path.of(System.getProperty("user.home"), ".streamingmusicbmbf");
-
     public MainCards() {
+        AppSettings appSettings = AppSettings.getInstance();
+
         // Load the logo image.
         logo = Toolkit.getDefaultToolkit().getImage("media/logo2.png");
         setIconImage(logo);
@@ -41,7 +45,7 @@ public class MainCards extends JFrame {
         setPreferredSize(new Dimension(1000, 600));
 
         // Create providers
-        YandexProvider yandexProvider = new YandexProvider(settingsPath);
+        YandexProvider yandexProvider = new YandexProvider(appSettings.getCachePath());
         providers.add(yandexProvider);
 
 
@@ -54,17 +58,16 @@ public class MainCards extends JFrame {
         for (AbstractProvider provider : providers) {
             cardPanel.add(new BaseCard(provider), provider.getProviderId());
         }
-//        cardPanel.add(new BaseCard(yandexProvider), "panel 1");
-//        cardPanel.add(new JLabel("Panel 2"), "panel 2");
-//        cardPanel.add(new JLabel("Panel 3"), "panel 3");
+
         // Create the button panel
 
         leftPanel = new MusicPanelButtons(providers, cardLayout, cardPanel);
+
+        cardLayout.show(cardPanel, appSettings.getStartPage());
+
         add(leftPanel, BorderLayout.WEST);
 
-//        JSeparator separator = new JSeparator();
-//        separator.setOrientation(SwingConstants.VERTICAL);
-//        add(separator, BorderLayout.CENTER);
+
 
         add(cardPanel, BorderLayout.CENTER);
 
@@ -93,7 +96,7 @@ class MusicPanelButtons extends JPanel {
         ButtonGroup buttonGroup = new ButtonGroup();
 
         // Create home button
-        DashedRoundedButton homeCardButton = new DashedRoundedButton("Home");
+        DashedRoundedButton homeCardButton = new DashedRoundedButton("Home", "home");
         homeCardButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(cardPanel, "home");
@@ -105,7 +108,7 @@ class MusicPanelButtons extends JPanel {
         buttonsPanel.add(Box.createVerticalStrut(20));
         // Create buttons for each provider
         for (AbstractProvider provider : providers) {
-            DashedRoundedButton providerButton = new DashedRoundedButton(provider.getProviderName());
+            DashedRoundedButton providerButton = new DashedRoundedButton(provider.getProviderName(), provider.getProviderId());
             providerButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     System.out.println(provider.getProviderId());
@@ -119,8 +122,8 @@ class MusicPanelButtons extends JPanel {
 
 //        JButton yandexCardButton = new JButton("Yandex Music");
 
-        DashedRoundedButton youtubeCardButton = new DashedRoundedButton("Youtube Music");
-        DashedRoundedButton localMusicCardButton = new DashedRoundedButton("Local Music");
+        DashedRoundedButton youtubeCardButton = new DashedRoundedButton("Youtube Music", "youtube");
+        DashedRoundedButton localMusicCardButton = new DashedRoundedButton("Local Music", "local");
 
 
 //        homeCardButton.addActionListener(this);
@@ -137,6 +140,16 @@ class MusicPanelButtons extends JPanel {
 
         buttonGroup.add(youtubeCardButton);
         buttonGroup.add(localMusicCardButton);
+
+        // set selected button
+        for (Component component : buttonsPanel.getComponents()) {
+            if (component instanceof DashedRoundedButton) {
+                DashedRoundedButton button = (DashedRoundedButton) component;
+                if (button.getButtonId().equals(AppSettings.getInstance().getStartPage())) {
+                    button.setSelected(true);
+                }
+            }
+        }
 
         JPanel statusSettingsPanel = new JPanel();
         statusSettingsPanel.setLayout(new BoxLayout(statusSettingsPanel, BoxLayout.Y_AXIS));
@@ -352,56 +365,112 @@ class SettingsDialog extends JDialog {
 //        setResizable(false);
         setLocationRelativeTo(null);
 
-        add(new JLabel("Settings"), BorderLayout.NORTH);
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(new BorderLayout());
-        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // First is AppSettings
+        AppSettings appSettings = AppSettings.getInstance();
 
         JLabel titleLabel = new JLabel("Settings");
+        titleLabel.setBorder(new EmptyBorder(15, 0, 14, 0));
+        titleLabel.setHorizontalAlignment(SwingConstants.LEFT);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        topPanel.add(titleLabel, BorderLayout.WEST);
-
-//        JButton closeButton = new JButton("X");
-//        closeButton.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                dispose();
-//            }
-//        });
-//        topPanel.add(closeButton, BorderLayout.EAST);
-
-        JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(titleLabel, BorderLayout.NORTH);
+//        add(, BorderLayout.NORTH);
 
 
-        JButton performSyncButton = new JButton("Perform sync");
-//        syncPanel.add(performSyncButton, BorderLayout.EAST);
+        JPanel appSettingsPanel = new JPanel();
+        GridBagLayout gridBagLayout = new GridBagLayout();
+        appSettingsPanel.setLayout(gridBagLayout);
+        appSettingsPanel.setBorder(new TitledBorder("App settings"));
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(5, 10, 5, 10);
+        // Configure cache path and default page. Label in left side with weight 1 and text field in right side with weight 2
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weightx = 1;
+        appSettingsPanel.add(new JLabel("Cache path:"), c);
+        c.gridx = 1;
+        c.gridy = 0;
+        c.weightx = 8;
+        JTextField cachePathTextField = new JTextField(appSettings.getCachePath().toString());
+        cachePathTextField.setText(appSettings.getCachePath().toString());
+        appSettingsPanel.add(cachePathTextField, c);
 
+        c.gridx = 0;
+        c.gridy = 1;
+        c.weightx = 1;
+        appSettingsPanel.add(new JLabel("Default page:"), c);
+        c.gridx = 1;
+        c.gridy = 1;
+        c.weightx = 8;
 
+        // Options for default page
+        JComboBox<ComboBoxElement> defaultPageComboBox = new JComboBox<>();
+        ComboBoxElement currentElement = new ComboBoxElement("Home", "home");
+        defaultPageComboBox.addItem(currentElement);
+        ComboBoxElement selectedElement = currentElement;
         for (AbstractProvider provider : providers) {
-//            JPanel providerPanel = new JPanel();
-//            providerPanel.setLayout(new BorderLayout());
-//            providerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-//            providerPanel.add(new JLabel(provider.getName()), BorderLayout.WEST);
-//            providerPanel.add(new JLabel(provider.getStatus()), BorderLayout.EAST);
-            centerPanel.add(provider.getSettingsPanel());
+            currentElement = new ComboBoxElement(provider.getProviderName(), provider.getProviderId());
+            defaultPageComboBox.addItem(currentElement);
+            if (currentElement.getValue().equals(appSettings.getStartPage())) {
+                selectedElement = currentElement;
+            }
         }
-//        centerPanel.add(syncPanel);
+
+        defaultPageComboBox.setSelectedItem(selectedElement);
+        appSettingsPanel.add(defaultPageComboBox, c);
+        add(appSettingsPanel, BorderLayout.CENTER);
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BorderLayout());
-        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        bottomPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
+        DashedRoundedSimpleButton cancelButton = new DashedRoundedSimpleButton("Cancel");
+        cancelButton.addActionListener(e -> {
+            dispose();
+        });
+        bottomPanel.add(cancelButton, BorderLayout.WEST);
+
+        DashedRoundedSimpleButton saveButton = new DashedRoundedSimpleButton("Save");
+        saveButton.addActionListener(e -> {
+            // Save settings
+
+            appSettings.setCachePath(Paths.get(cachePathTextField.getText()));
+            appSettings.setStartPage(((ComboBoxElement) Objects.requireNonNull(defaultPageComboBox.getSelectedItem())).getValue());
+            appSettings.saveConfig();
+            dispose();
         });
         bottomPanel.add(saveButton, BorderLayout.EAST);
 
-        add(topPanel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+}
+
+class ComboBoxElement {
+    private String name;
+    private String value;
+
+    public ComboBoxElement(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
+
+    public String toString() {
+        return name;
+    }
+
+    public String getValue() {
+        return value;
     }
 }
