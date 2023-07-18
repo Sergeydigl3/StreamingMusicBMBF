@@ -25,7 +25,8 @@ public class ProviderManager {
     @Setter
     private String filePath = "db.dat";
 
-    Thread syncThread;
+    //    Thread syncThread;
+    @Getter
     private ArrayList<AbstractProvider> providers;
 
     @Getter
@@ -138,6 +139,8 @@ public class ProviderManager {
                 System.out.println("Syncing playlist: " + playlist.getTitle());
                 temp.get(playlist).forEach(trackId -> {
                     BaseTrack track = getTrackById(providerId, trackId);
+                    if (track == null) return;
+                    if (track.getNowSyncing()) return;
                     track.setNowSyncing(true);
                     executor.submit(() -> {
                         // switch case pipline
@@ -202,7 +205,7 @@ public class ProviderManager {
             executor.shutdown();
             while (true) {
                 try {
-                    if(executor.awaitTermination(10, TimeUnit.SECONDS))
+                    if (executor.awaitTermination(10, TimeUnit.SECONDS))
                         break;
                 } catch (InterruptedException e) {
                     e.printStackTrace();

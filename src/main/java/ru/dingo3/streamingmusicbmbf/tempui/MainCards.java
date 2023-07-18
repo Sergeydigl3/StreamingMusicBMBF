@@ -1,5 +1,6 @@
 package ru.dingo3.streamingmusicbmbf.tempui;
 
+import ru.dingo3.streamingmusicbmbf.core.ProviderManager;
 import ru.dingo3.streamingmusicbmbf.helpers.AppSettings;
 import ru.dingo3.streamingmusicbmbf.helpers.CachedImageIconDb;
 import ru.dingo3.streamingmusicbmbf.layouts.WrapLayout;
@@ -28,10 +29,11 @@ import java.util.Objects;
 
 public class MainCards extends JFrame {
     private Image logo;
-    private final java.util.List<AbstractProvider> providers = new ArrayList<>();
+//    private final java.util.List<AbstractProvider> providers = new ArrayList<>();
     private JPanel leftPanel;
     private JPanel cardPanel;
     private CardLayout cardLayout;
+    private ProviderManager providerManager;
 
     public MainCards() {
         AppSettings appSettings = AppSettings.getInstance();
@@ -44,9 +46,11 @@ public class MainCards extends JFrame {
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(1000, 600));
 
+        providerManager = new ProviderManager();
+        providerManager.setFilePath(appSettings.getCachePath().toString());
         // Create providers
         YandexProvider yandexProvider = new YandexProvider(appSettings.getCachePath());
-        providers.add(yandexProvider);
+        providerManager.addProvider(yandexProvider);
 
 
         // Create the card panel with CardLayout
@@ -55,13 +59,13 @@ public class MainCards extends JFrame {
         cardPanel.setLayout(cardLayout);
         cardPanel.add(new HomeCard(), "home");
 
-        for (AbstractProvider provider : providers) {
+        for (AbstractProvider provider : providerManager.getProviders()) {
             cardPanel.add(new BaseCard(provider), provider.getProviderId());
         }
 
         // Create the button panel
 
-        leftPanel = new MusicPanelButtons(providers, cardLayout, cardPanel);
+        leftPanel = new MusicPanelButtons(providerManager.getProviders(), cardLayout, cardPanel);
 
         cardLayout.show(cardPanel, appSettings.getStartPage());
 

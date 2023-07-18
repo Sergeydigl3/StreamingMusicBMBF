@@ -30,8 +30,6 @@ public interface AbstractProvider {
 
     ArrayList<BaseTrack> getTracks(String playlistId);
 
-    JPanel getSettingsPanel();
-
     Path getCachePath();
 
     void downloadTrack(BasePlaylist playlist, BaseTrack track);
