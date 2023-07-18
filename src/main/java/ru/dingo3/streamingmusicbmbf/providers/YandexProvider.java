@@ -13,6 +13,7 @@ import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
 
 import javax.swing.*;
 import java.awt.BorderLayout;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class YandexProvider implements AbstractProvider {
+public class YandexProvider implements AbstractProvider, Serializable {
 
     private static final String providerName = "Yandex.Music";
 
@@ -29,6 +30,8 @@ public class YandexProvider implements AbstractProvider {
     private final YandexMusicClient yandexMusicClient;
 
     private boolean sync = false;
+
+    private boolean nowSyncing = false;
 
     @Override
     public boolean getSync() {
@@ -40,7 +43,7 @@ public class YandexProvider implements AbstractProvider {
     public YandexProvider(Path cachePath) {
         token = System.getenv("YM_TOKEN"); // TODO: Remove env set
         this.cachePath = Paths.get(cachePath.toString(), providerId);
-        System.out.println("YandexProvider: " + cachePath);
+//        System.out.println("YandexProvider: " + cachePath);
         yandexMusicClient = new YandexMusicClient(token);
         yandexMusicClient.init();
     }
@@ -90,7 +93,7 @@ public class YandexProvider implements AbstractProvider {
             BasePlaylist playlist = new BasePlaylist();
             playlist.setId(Integer.toString(ymPlaylistItem.getKind()));
             playlist.setTitle(ymPlaylistItem.getTitle());
-            System.out.println("YandexProvider: getPlaylists: " + ymPlaylistItem.getOgImage());
+//            System.out.println("YandexProvider: getPlaylists: " + ymPlaylistItem.getOgImage());
             if (
                     ymPlaylistItem.getOgImage().isEmpty()
                             || ymPlaylistItem.getOgImage().equals("avatars.yandex.net/get-music-user-playlist/27701/273593788.1029.15216/%%?1662069740465")
@@ -112,8 +115,11 @@ public class YandexProvider implements AbstractProvider {
         java.util.List<PlaylistResponse.Track> ymTracks = yandexMusicClient.getPlaylistTracks(playlistId);
         if (ymTracks != null) {
             for (PlaylistResponse.Track ymTrack : ymTracks) {
+                if (ymTrack.getTrack() == null || ymTrack.getTrack().getArtists() == null || ymTrack.getTrack().getArtists().isEmpty() || ymTrack.getTrack().getTitle() == null) {
+                    continue;
+                }
                 BaseTrack track = new BaseTrack();
-                track.setId(ymTrack.getId());
+                track.setId(Integer.toString(ymTrack.getId()));
                 track.setTitle(ymTrack.getTrack().getTitle());
                 track.setArtist(ymTrack.getTrack().getArtists().get(0).getName());
 
@@ -154,6 +160,23 @@ public class YandexProvider implements AbstractProvider {
 
     public Path getCachePath() {
         return cachePath;
+    }
+
+    @Override
+    public void downloadTrack(BasePlaylist playlist, BaseTrack track) {
+        System.out.println("YandexProvider: downloadTrack: " + track.getTitle());
+        Path trackPath = Paths.get(cachePath.toString(), "/music/", track.getId() + ".mp3");
+        yandexMusicClient.downloadTrack(track.getId(), trackPath.toString());
+        track.setLocalPath(trackPath.toString());
+    }
+
+    @Override
+    public boolean getNowSyncing() {
+        return nowSyncing;
+    }
+
+    public void setNowSyncing(boolean nowSyncing) {
+        this.nowSyncing = nowSyncing;
     }
 }
 

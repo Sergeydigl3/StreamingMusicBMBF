@@ -14,7 +14,7 @@ public class CachedImageIconDb {
     }
 
     public ImageIcon getByUrl(String url) {
-        Path file = Paths.get(path, "cache", url.hashCode() + ".jpg");
+        Path file = Paths.get(path, "imgCache", url.hashCode() + ".jpg");
 
         if (Files.exists(file)) {
             return new ImageIcon(file.toString());

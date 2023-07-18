@@ -94,9 +94,9 @@ public class YandexMusicClient {
             String response = this.request.sendGet(url);
 
             JSONObject jsonObject = new JSONObject(response);
-            System.out.println(response);
+//            System.out.println(response);
             ObjectMapper objectMapper = new ObjectMapper();
-
+//            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             ArrayList<Playlist> playlists = objectMapper.readValue(response, PlaylistsResponse.class).getResult();
             // print all names
 //            for (Playlist playlist : playlists) {
@@ -124,12 +124,12 @@ public class YandexMusicClient {
 
         try {
             String response = this.request.sendGet(url);
-            System.out.println(response);
+//            System.out.println(response);
             ObjectMapper objectMapper = new ObjectMapper();
 
             List<PlaylistResponse.Track> tracks = objectMapper.readValue(response, PlaylistResponse.class).getResult().getTracks();
             // print all names
-            System.out.println(tracks);
+//            System.out.println(tracks);
 //            for (Track track : tracks) {
 //                System.out.println(track.getTrack().getTitle() + " - " + track.getTrack().getArtists().get(0).getName() + " - " + track.getTrack().getId());
 //            }
@@ -145,12 +145,20 @@ public class YandexMusicClient {
         return this.getPlaylistTracks(playlistId, this.me.getUid());
     }
 
-    public void downloadTrack(int trackId, Path savePath) {
+    public void downloadTrack(String trackId, Path savePath) {
         String url = this.baseUrl + "/tracks/" + trackId + "/download-info";
         // check if file exists
         if (Files.exists(savePath)) {
             System.out.println("File already exists");
             return;
+        }
+        // Create path if it doesn't exist
+        if (!Files.exists(savePath.getParent())) {
+            try {
+                Files.createDirectories(savePath.getParent());
+            } catch (Exception e) {
+                System.out.println(e);
+            }
         }
         try {
             String response = this.request.sendGet(url);
@@ -199,7 +207,10 @@ public class YandexMusicClient {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
 
+    public void downloadTrack(String trackId, String savePath) {
+        this.downloadTrack(trackId, Paths.get(savePath));
     }
 
     public static void main(String[] args) {

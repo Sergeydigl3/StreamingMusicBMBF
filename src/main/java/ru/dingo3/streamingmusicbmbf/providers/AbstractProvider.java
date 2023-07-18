@@ -33,4 +33,10 @@ public interface AbstractProvider {
     JPanel getSettingsPanel();
 
     Path getCachePath();
+
+    void downloadTrack(BasePlaylist playlist, BaseTrack track);
+
+    boolean getNowSyncing();
+
+    void setNowSyncing(boolean nowSyncing);
 }
