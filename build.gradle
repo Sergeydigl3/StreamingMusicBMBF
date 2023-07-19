@@ -37,7 +37,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'ru.dingo3.streamingmusicbmbf.ui.Main'
+    mainClass = 'ru.dingo3.streamingmusicbmbf.ui.MainCards'
 }
 
 test {

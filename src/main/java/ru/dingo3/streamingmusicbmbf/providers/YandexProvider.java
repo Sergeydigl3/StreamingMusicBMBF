@@ -1,18 +1,13 @@
 package ru.dingo3.streamingmusicbmbf.providers;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.json.JSONObject;
-import ru.dingo3.streamingmusicbmbf.core.YandexMusicClient;
+import ru.dingo3.streamingmusicbmbf.libs.YandexMusicClient;
 import ru.dingo3.streamingmusicbmbf.models.PlaylistResponse;
 import ru.dingo3.streamingmusicbmbf.models.PlaylistsResponse;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
 
-import javax.swing.*;
-import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;

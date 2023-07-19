@@ -46,10 +46,10 @@ public class ProviderManager {
     public void saveDbToDisk() {
         try {
             // if directory not exists, create it
-            File directory = new File(filePath).getParentFile();
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
+//            File directory = new File(filePath).getParentFile();
+//            if (!directory.exists()) {
+//                directory.mkdirs();
+//            }
             FileOutputStream fileOut = new FileOutputStream(filePath);
             ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
             objectOut.writeObject(db);

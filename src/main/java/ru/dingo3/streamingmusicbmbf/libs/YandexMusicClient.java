@@ -1,4 +1,4 @@
-package ru.dingo3.streamingmusicbmbf.core;
+package ru.dingo3.streamingmusicbmbf.libs;
 
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -20,7 +20,6 @@ import ru.dingo3.streamingmusicbmbf.models.PlaylistsResponse.Playlist;
 import ru.dingo3.streamingmusicbmbf.network.HttpRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.swing.*;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;

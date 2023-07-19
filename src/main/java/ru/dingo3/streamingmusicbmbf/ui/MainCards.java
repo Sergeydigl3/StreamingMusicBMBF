@@ -1,13 +1,12 @@
-package ru.dingo3.streamingmusicbmbf.tempui;
+package ru.dingo3.streamingmusicbmbf.ui;
 
 import ru.dingo3.streamingmusicbmbf.core.ProviderManager;
-import ru.dingo3.streamingmusicbmbf.helpers.AppSettings;
+import ru.dingo3.streamingmusicbmbf.core.AppSettings;
 import ru.dingo3.streamingmusicbmbf.helpers.CachedImageIconDb;
 import ru.dingo3.streamingmusicbmbf.layouts.WrapLayout;
 import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
 import ru.dingo3.streamingmusicbmbf.providers.YandexProvider;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
-import ru.dingo3.streamingmusicbmbf.ui.PlaylistApp;
 import ru.dingo3.streamingmusicbmbf.ui.components.DashedRoundedButton;
 import ru.dingo3.streamingmusicbmbf.ui.components.DashedRoundedSimpleButton;
 import ru.dingo3.streamingmusicbmbf.views.providers.AbstractProviderView;

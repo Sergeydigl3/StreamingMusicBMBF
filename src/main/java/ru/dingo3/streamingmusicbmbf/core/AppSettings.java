@@ -1,4 +1,4 @@
-package ru.dingo3.streamingmusicbmbf.helpers;
+package ru.dingo3.streamingmusicbmbf.core;
 
 // singleton style class
 
@@ -38,12 +38,12 @@ public class AppSettings {
         return instance;
     }
 
-    private void readConfig() {
+    public void readConfig() {
         // if config path does not exist, create it
         if (!Files.exists(configPath)) {
             try {
                 Files.createDirectories(configPath.getParent());
-                Files.createFile(configPath);
+//                Files.createFile(configPath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -93,11 +93,4 @@ public class AppSettings {
 class AppSettingsConfig {
     private String cachePath;
     private String startPage;
-}
-
-class AppSettingsTest {
-    public static void main(String[] args) {
-        AppSettings settings = AppSettings.getInstance();
-        System.out.println(settings.getConfigPath());
-    }
 }
