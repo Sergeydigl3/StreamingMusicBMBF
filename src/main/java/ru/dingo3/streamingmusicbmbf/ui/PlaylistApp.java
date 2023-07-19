@@ -1,9 +1,11 @@
 package ru.dingo3.streamingmusicbmbf.ui;
 
+import ru.dingo3.streamingmusicbmbf.core.ProviderManager;
 import ru.dingo3.streamingmusicbmbf.helpers.CachedImageIconDb;
 import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
+import ru.dingo3.streamingmusicbmbf.providers.models.SyncState;
 import ru.dingo3.streamingmusicbmbf.ui.components.DashedRoundedButton;
 
 import javax.imageio.ImageIO;
@@ -11,47 +13,51 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-class RoundedImageExample extends JPanel {
-    private BufferedImage image;
-
-    public RoundedImageExample() {
-        try {
-            image = ImageIO.read(new File("playlist1.jpg"));
-            image = image.getSubimage(0, 0, 150, 150);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g.create();
-
-        int x = (getWidth() - image.getWidth()) / 2;
-        int y = (getHeight() - image.getHeight()) / 2;
-
-        RoundRectangle2D rect = new RoundRectangle2D.Float(x, y, image.getWidth(), image.getHeight(), 50, 50);
-        g2d.clip(rect);
-        g2d.drawImage(image, x, y, this);
-
-        g2d.dispose();
-    }
-}
+//class RoundedImageExample extends JPanel {
+//    private BufferedImage image;
+//
+//    public RoundedImageExample() {
+//        try {
+//            image = ImageIO.read(new File("playlist1.jpg"));
+//            image = image.getSubimage(0, 0, 150, 150);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    @Override
+//    protected void paintComponent(Graphics g) {
+//        super.paintComponent(g);
+//        Graphics2D g2d = (Graphics2D) g.create();
+//
+//        int x = (getWidth() - image.getWidth()) / 2;
+//        int y = (getHeight() - image.getHeight()) / 2;
+//
+//        RoundRectangle2D rect = new RoundRectangle2D.Float(x, y, image.getWidth(), image.getHeight(), 50, 50);
+//        g2d.clip(rect);
+//        g2d.drawImage(image, x, y, this);
+//
+//        g2d.dispose();
+//    }
+//}
 
 public class PlaylistApp extends JDialog {
     private PlaylistHeader header;
-    private PlaylistContent content;
-    private PlaylistContent content2;
-
 //    private CachedImageIconDb cashedImageIconDb;
 
-    public PlaylistApp(AbstractProvider provider, BasePlaylist playlist) {
+    ExecutorService executorService = Executors.newFixedThreadPool(1);
+
+    public PlaylistApp(AbstractProvider provider, BasePlaylist playlist, ProviderManager providerManager) {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(800, 400));
 
@@ -63,22 +69,22 @@ public class PlaylistApp extends JDialog {
 
 //        panel.setLayout(new javax.swing.BoxLayout(panel, javax.swing.BoxLayout.PAGE_AXIS));
 
-        header = new PlaylistHeader(provider, playlist);
+        header = new PlaylistHeader(provider, playlist, providerManager);
         panel.add(header);
-
         JSeparator separator = new JSeparator();
         separator.setMaximumSize(new Dimension(Short.MAX_VALUE, 30));
 //        separator.setBackground(Color.BLUE);
         panel.add(separator);
 //        panel.setBackground(Color.BLUE);
-        MusicList musicList = new MusicList();
+        ArrayList<BaseTrack> providerTracks = provider.getTracks(playlist.getId());
+
+        MusicList musicList = new MusicList(providerManager, provider, playlist, providerTracks, executorService);
         panel.add(musicList);
 
-        ArrayList<BaseTrack> providerTracks = provider.getTracks(playlist.getId());
 
         if (providerTracks != null) {
             for (BaseTrack track : providerTracks) {
-                musicList.addRow(track.getTitle(), track.getArtist(), "", false);
+                musicList.addRow(track, false);
             }
         }
 //        musicList.addRow("TRACK", "ARTIST", "STATUS", false);
@@ -87,6 +93,13 @@ public class PlaylistApp extends JDialog {
 
         add(panel);
         pack();
+
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                executorService.shutdownNow();
+            }
+        });
     }
 
     public static void main(String args[]) {
@@ -114,7 +127,7 @@ class PlaylistHeader extends JPanel {
     private JButton downloadButton;
     CachedImageIconDb cachedImageIconDb;
 
-    public PlaylistHeader(AbstractProvider provider, BasePlaylist playlist) {
+    public PlaylistHeader(AbstractProvider provider, BasePlaylist playlist, ProviderManager providerManager) {
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
         setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
@@ -168,19 +181,29 @@ class PlaylistHeader extends JPanel {
         playlistActions.setAlignmentX(Component.LEFT_ALIGNMENT);
         playlistActions.setLayout(new javax.swing.BoxLayout(playlistActions, javax.swing.BoxLayout.LINE_AXIS));
 
-        syncButton = new DashedRoundedButton("Sync disabled");
-        syncButton.setSelected(false);
-        syncButton.addChangeListener(new ChangeListener() {
+        if (providerManager.getPlaylistSyncState(provider.getProviderId(), playlist.getId())) {
+            syncButton = new DashedRoundedButton("Sync enabled");
+            syncButton.setSelected(true);
+        } else {
+            syncButton = new DashedRoundedButton("Sync disabled");
+            syncButton.setSelected(false);
+        }
+//        syncButton = new DashedRoundedButton("Sync disabled");
+//        syncButton.setSelected(false);
+        syncButton.addActionListener(new ActionListener() {
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 if (syncButton.getModel().isSelected()) {
                     syncButton.setText("Sync enabled");
+
                 } else {
                     syncButton.setText("Sync disabled");
                 }
+//                System.out.println("TOAWDWADOAWDWD");
+                providerManager.setPlaylistSyncState(provider.getProviderId(), playlist, syncButton.getModel().isSelected());
+                providerManager.saveDbToDisk();
             }
         });
-//        syncButton.setText();
         playlistActions.add(syncButton);
 
 //        downloadButton = new JButton();
@@ -191,48 +214,19 @@ class PlaylistHeader extends JPanel {
     }
 }
 
-class PlaylistContent extends JPanel {
-    private JLabel jTrack;
-    private JLabel jArtist;
-    private JLabel jStatus;
-
-    public PlaylistContent(String track, String artist, String status) {
-        initComponents(track, artist, status);
-    }
-
-    private void initComponents(String track, String artist, String status) {
-        setAlignmentX(0.0F);
-        setAlignmentY(0.0F);
-        setMaximumSize(new java.awt.Dimension(2147483647, 18));
-        setMinimumSize(new java.awt.Dimension(212, 18));
-        java.awt.GridBagLayout contentLayout = new java.awt.GridBagLayout();
-        contentLayout.columnWidths = new int[]{1, 5, 3, 4};
-        contentLayout.columnWeights = new double[]{1.0, 5.0, 3.0, 4.0};
-        setLayout(contentLayout);
-
-        JLabel jLabel4 = new JLabel();
-        jLabel4.setText("icon");
-        add(jLabel4, new java.awt.GridBagConstraints());
-
-        jTrack = new JLabel();
-        jTrack.setText(track);
-        add(jTrack, new java.awt.GridBagConstraints());
-
-        jArtist = new JLabel();
-        jArtist.setText(artist);
-        add(jArtist, new java.awt.GridBagConstraints());
-
-        jStatus = new JLabel();
-        jStatus.setText(status);
-        add(jStatus, new java.awt.GridBagConstraints());
-    }
-}
 
 class MusicList extends JScrollPane {
     private JPanel headerPanel;
     private JPanel mainPanel;
 
-    public MusicList() {
+    private ConcurrentHashMap<BaseTrack, JLabel> labelStorage = new ConcurrentHashMap<>();
+
+    ArrayList<String> trackIds = new ArrayList<>();
+//    private ArrayList<PlaylistContent> playlistContent;
+
+    Thread labelStorageThread;
+
+    public MusicList(ProviderManager providerManager, AbstractProvider provider, BasePlaylist playlist, ArrayList<BaseTrack> playlistContent, ExecutorService executorService) {
         setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         mainPanel = new JPanel();
@@ -247,11 +241,9 @@ class MusicList extends JScrollPane {
         headerPanel = new JPanel(new GridLayout(1, 3));
         headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
-        String title = "TITLE";
-        JLabel titleLabel = new JLabel(title);
+        JLabel titleLabel = new JLabel("TITLE");
         JLabel artistLabel = new JLabel("ARTIST");
         JLabel statusLabel = new JLabel("STATUS");
-        title = "TITLe";
 
         headerPanel.add(titleLabel);
         headerPanel.add(artistLabel);
@@ -260,17 +252,55 @@ class MusicList extends JScrollPane {
         setColumnHeaderView(headerPanel);
 
         setViewportView(mainPanel);
+
+        for (BaseTrack track : playlistContent) {
+            trackIds.add(track.getId());
+        }
+        labelStorageThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                while (true) {
+                    if (labelStorage.size() > 0) {
+                        System.out.println("Terminator is running");
+                        ArrayList<BaseTrack> tracksByIds = providerManager.getTracksByIds(provider.getProviderId(), trackIds);
+                        for (BaseTrack track : tracksByIds) {
+                            if (labelStorage.containsKey(track)) {
+                                JLabel label = labelStorage.get(track);
+                                if (label != null) {
+                                    if (track.getSyncState() == SyncState.DOWNLOADED) {
+                                        label.setText("Downloaded");
+                                    } else if (track.getSyncState() == SyncState.DOWNLOADING) {
+                                        label.setText("Downloading");
+                                    } else if (track.getSyncState() == SyncState.NOT_DOWNLOADED) {
+                                        label.setText("Not downloaded");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        });
+        executorService.submit(labelStorageThread);
     }
 
-    public void addRow(String title, String artist, String status, boolean isHeader) {
+    public void addRow(BaseTrack track, boolean isHeader) {
         JPanel rowPanel = new JPanel(new GridLayout(1, 3));
 //        rowPanel.setBackground(Color.lightGray);
 //        rowPanel.setAlignmentY(Component.TOP_ALIGNMENT);
         rowPanel.setMaximumSize(new Dimension(Short.MAX_VALUE, 30));
         rowPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        JLabel titleLabel = new JLabel(title);
-        JLabel artistLabel = new JLabel(artist);
-        JLabel statusLabel = new JLabel(status);
+        JLabel titleLabel = new JLabel(track.getTitle());
+        JLabel artistLabel = new JLabel(track.getArtist());
+        JLabel statusLabel = new JLabel("");
+
+        labelStorage.put(track, statusLabel);
 
         if (isHeader) {
             titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));

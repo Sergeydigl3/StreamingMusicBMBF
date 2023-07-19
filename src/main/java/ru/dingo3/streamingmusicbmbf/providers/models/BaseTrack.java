@@ -12,7 +12,7 @@ public class BaseTrack implements Serializable {
 
     String localPath = "";
 
-    transient Boolean nowSyncing = false;
+    Boolean nowSyncing = false;
 
     @Override
     public int hashCode() {

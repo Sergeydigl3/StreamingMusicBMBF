@@ -10,6 +10,8 @@ import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.ui.PlaylistApp;
 import ru.dingo3.streamingmusicbmbf.ui.components.DashedRoundedButton;
 import ru.dingo3.streamingmusicbmbf.ui.components.DashedRoundedSimpleButton;
+import ru.dingo3.streamingmusicbmbf.views.providers.AbstractProviderView;
+import ru.dingo3.streamingmusicbmbf.views.providers.YandexProviderView;
 
 import javax.swing.*;
 
@@ -21,7 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -47,9 +48,15 @@ public class MainCards extends JFrame {
         setPreferredSize(new Dimension(1000, 600));
 
         providerManager = new ProviderManager();
-        providerManager.setFilePath(appSettings.getCachePath().toString());
+        providerManager.setFilePath(appSettings.getCachePath().toString()+"/providers.dat");
+        providerManager.loadDbFromDisk();
         // Create providers
+
+        ArrayList<AbstractProviderView> providerViews = new ArrayList<>();
         YandexProvider yandexProvider = new YandexProvider(appSettings.getCachePath());
+        YandexProviderView yandexProviderView = new YandexProviderView(yandexProvider);
+        providerViews.add(yandexProviderView);
+
         providerManager.addProvider(yandexProvider);
 
 
@@ -59,13 +66,13 @@ public class MainCards extends JFrame {
         cardPanel.setLayout(cardLayout);
         cardPanel.add(new HomeCard(), "home");
 
-        for (AbstractProvider provider : providerManager.getProviders()) {
-            cardPanel.add(new BaseCard(provider), provider.getProviderId());
+        for (AbstractProviderView provider : providerViews) {
+            cardPanel.add(new BaseCard(provider, providerManager), provider.getProvider().getProviderId());
         }
 
         // Create the button panel
 
-        leftPanel = new MusicPanelButtons(providerManager.getProviders(), cardLayout, cardPanel);
+        leftPanel = new MusicPanelButtons(providerViews, cardLayout, cardPanel);
 
         cardLayout.show(cardPanel, appSettings.getStartPage());
 
@@ -89,7 +96,7 @@ public class MainCards extends JFrame {
 class MusicPanelButtons extends JPanel {
     private static SettingsDialog settingsDialog;
 
-    public MusicPanelButtons(java.util.List<AbstractProvider> providers, CardLayout cardLayout, JPanel cardPanel) {
+    public MusicPanelButtons(ArrayList<AbstractProviderView> providers, CardLayout cardLayout, JPanel cardPanel) {
         setLayout(new BorderLayout());
 
         // Create the button panel
@@ -111,7 +118,8 @@ class MusicPanelButtons extends JPanel {
         buttonGroup.add(homeCardButton);
         buttonsPanel.add(Box.createVerticalStrut(20));
         // Create buttons for each provider
-        for (AbstractProvider provider : providers) {
+        for (AbstractProviderView providerView : providers) {
+            AbstractProvider provider = providerView.getProvider();
             DashedRoundedButton providerButton = new DashedRoundedButton(provider.getProviderName(), provider.getProviderId());
             providerButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -244,7 +252,7 @@ class HomeCard extends JPanel {
 }
 
 class BaseCard extends JPanel {
-    public BaseCard(AbstractProvider provider) {
+    public BaseCard(AbstractProviderView provider, ProviderManager providerManager) {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         JPanel headerPanel = new JPanel() {
@@ -278,10 +286,10 @@ class BaseCard extends JPanel {
         playlistPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 //        playlistPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 //        playlistPanel.setAlignmentY(Component.TOP_ALIGNMENT);
-        ArrayList<BasePlaylist> playlists = provider.getPlaylists();
+        ArrayList<BasePlaylist> playlists = provider.getProvider().getPlaylists();
         if (playlists != null) {
             for (BasePlaylist playlist : playlists) {
-                playlistPanel.add(new PlaylistPanel(playlist, provider));
+                playlistPanel.add(new PlaylistPanel(playlist, provider.getProvider(), providerManager));
             }
         }
 //        playlistPanel.add(new PlaylistPanel("Playlist 1", "playlist2.jpg"));
@@ -305,6 +313,13 @@ class BaseCard extends JPanel {
 
 //        JButton performSyncButton = new JButton("Perform sync");
         DashedRoundedSimpleButton performSyncButton = new DashedRoundedSimpleButton("Perform sync");
+        performSyncButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                providerManager.getRecentDataTrack(provider.getProvider());
+                providerManager.performSync(provider.getProvider());
+            }
+        });
 //        performSyncButton.setPreferredSize(new Dimension(100, 20));
 
         bottomPanel.add(checkBox, BorderLayout.WEST);
@@ -320,7 +335,7 @@ class BaseCard extends JPanel {
 }
 
 class PlaylistPanel extends JPanel {
-    public PlaylistPanel(BasePlaylist playlist, AbstractProvider provider) {
+    public PlaylistPanel(BasePlaylist playlist, AbstractProvider provider, ProviderManager providerManager) {
         CachedImageIconDb cachedImageIconDb = new CachedImageIconDb(provider.getCachePath().toString());
         ImageIcon imageIcon = cachedImageIconDb.getByUrlResized(playlist.getImage(), 160, 160);
         setBorder(BorderFactory.createEmptyBorder(10, 20, 15, 15));
@@ -349,7 +364,7 @@ class PlaylistPanel extends JPanel {
                 // Open playlist
                 System.out.println("Clicked on playlist " + playlist.getId());
 
-                JDialog dialog = new PlaylistApp(provider, playlist);
+                JDialog dialog = new PlaylistApp(provider, playlist, providerManager);
                 dialog.setVisible(true);
             }
         });
@@ -357,7 +372,7 @@ class PlaylistPanel extends JPanel {
 }
 
 class SettingsDialog extends JDialog {
-    public SettingsDialog(java.util.List<AbstractProvider> providers) {
+    public SettingsDialog(ArrayList<AbstractProviderView> providers) {
 //        super(owner, "Settings", true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 //        setUndecorated(true);
@@ -379,6 +394,17 @@ class SettingsDialog extends JDialog {
         add(titleLabel, BorderLayout.NORTH);
 //        add(, BorderLayout.NORTH);
 
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new GridBagLayout());
+        GridBagConstraints center = new GridBagConstraints();
+        center.insets = new Insets(5, 10, 5, 10);
+        center.fill = GridBagConstraints.HORIZONTAL;
+        center.gridx = 0;
+        center.gridy = 0;
+        center.weightx = 1;
+        center.weighty = 1;
+//        center.anchor = GridBagConstraints;
+        center.ipady = 10;
 
         JPanel appSettingsPanel = new JPanel();
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -407,12 +433,14 @@ class SettingsDialog extends JDialog {
         c.gridy = 1;
         c.weightx = 8;
 
+
         // Options for default page
         JComboBox<ComboBoxElement> defaultPageComboBox = new JComboBox<>();
         ComboBoxElement currentElement = new ComboBoxElement("Home", "home");
         defaultPageComboBox.addItem(currentElement);
         ComboBoxElement selectedElement = currentElement;
-        for (AbstractProvider provider : providers) {
+        for (AbstractProviderView providerView : providers) {
+            AbstractProvider provider = providerView.getProvider();
             currentElement = new ComboBoxElement(provider.getProviderName(), provider.getProviderId());
             defaultPageComboBox.addItem(currentElement);
             if (currentElement.getValue().equals(appSettings.getStartPage())) {
@@ -422,7 +450,15 @@ class SettingsDialog extends JDialog {
 
         defaultPageComboBox.setSelectedItem(selectedElement);
         appSettingsPanel.add(defaultPageComboBox, c);
-        add(appSettingsPanel, BorderLayout.CENTER);
+
+
+        centerPanel.add(appSettingsPanel, center);
+        for (AbstractProviderView providerView : providers) {
+            center.gridy++;
+            centerPanel.add(providerView.getSettingsPanel(), center);
+        }
+
+        add(centerPanel, BorderLayout.CENTER);
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BorderLayout());

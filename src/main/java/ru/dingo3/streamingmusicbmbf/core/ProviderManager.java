@@ -10,6 +10,7 @@ import ru.dingo3.streamingmusicbmbf.providers.models.SyncState;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProviderManager {
@@ -35,7 +36,7 @@ public class ProviderManager {
     @Getter
     private ConcurrentHashMap<String, CopyOnWriteArrayList<BaseTrack>> tracksDb = new ConcurrentHashMap<>();
 
-    ExecutorService executor;
+    ExecutorService executor = Executors.newFixedThreadPool(nThreads);
 
     public ProviderManager() {
         providers = new ArrayList<>();
@@ -44,6 +45,11 @@ public class ProviderManager {
 
     public void saveDbToDisk() {
         try {
+            // if directory not exists, create it
+            File directory = new File(filePath).getParentFile();
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
             FileOutputStream fileOut = new FileOutputStream(filePath);
             ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
             objectOut.writeObject(db);
@@ -59,6 +65,10 @@ public class ProviderManager {
     //
     public void loadDbFromDisk() {
         try {
+            if (!new File(filePath).exists()) {
+                System.out.println("Database file not found.");
+                return;
+            }
             FileInputStream fileIn = new FileInputStream(filePath);
             ObjectInputStream objectIn = new ObjectInputStream(fileIn);
             db = (ConcurrentHashMap<String, CopyOnWriteArrayList<ConcurrentHashMap<BasePlaylist, CopyOnWriteArrayList<String>>>>) objectIn.readObject();
@@ -84,7 +94,15 @@ public class ProviderManager {
 //    public ArrayList<AbstractProvider> getProviders() {
 //        return new ArrayList<>(db.keySet());
 //    }
-
+    public ArrayList<BaseTrack> getTracksByIds(String providerId, ArrayList<String> trackIds) {
+        ArrayList<BaseTrack> tracks = new ArrayList<>();
+        trackIds.forEach(trackId -> {
+            if (tracksDb.get(providerId).stream().anyMatch(temp -> temp.getId().equals(trackId))) {
+                tracks.add(tracksDb.get(providerId).stream().filter(temp -> temp.getId().equals(trackId)).findFirst().get());
+            }
+        });
+        return tracks;
+    }
     public void getRecentDataPlaylist(AbstractProvider provider) {
 //        db.putIfAbsent(provider, new CopyOnWriteArrayList<>());
         AtomicInteger playlists = new AtomicInteger();
@@ -147,11 +165,11 @@ public class ProviderManager {
                         while (track.getSyncState() != SyncState.DOWNLOADED) {
                             System.out.println("Syncing track: " + track.getTitle() + " " + track.getSyncState());
                             switch (track.getSyncState()) {
-                                case NOT_DOWNLOADED -> {
+                                case NOT_DOWNLOADED:
                                     track.setSyncState(SyncState.DOWNLOADING);
                                     provider.downloadTrack(playlist, track);
                                     track.setSyncState(SyncState.DOWNLOADED);
-                                }
+                                    break;
                             }
                         }
                         System.out.println("Syncing track: " + track.getTitle() + " " + track.getSyncState());
@@ -162,15 +180,52 @@ public class ProviderManager {
             });
         });
     }
+    public void setPlaylistSyncState(String provider, String basePlaylistId, boolean state){
+        BasePlaylist basePlaylist = new BasePlaylist();
+        basePlaylist.setId(basePlaylistId);
+        setPlaylistSyncState(provider, basePlaylist, state);
+    }
 
-    public void setPlaylistSyncState(String provider, String playlistId, boolean state) {
+    public void setPlaylistSyncState(String provider, BasePlaylist basePlaylist, boolean state) {
+        AtomicBoolean synced = new AtomicBoolean(false);
         db.get(provider).forEach(temp -> {
             temp.keySet().forEach(playlist -> {
-                if (playlist.getId().equals(playlistId)) {
+                if (playlist.getId().equals(basePlaylist.getId())) {
                     playlist.setSync(state);
+                    System.out.println("Playlist " + playlist.getTitle() + " sync state: " + state);
+                    synced.set(true);
                 }
             });
         });
+        if (!synced.get()) {
+            System.out.println("Playlist adding " + basePlaylist.getTitle() + " not found. Adding...");
+            db.get(provider).add(new ConcurrentHashMap<>());
+            db.get(provider).get(db.get(provider).size() - 1).put(basePlaylist, new CopyOnWriteArrayList<>());
+            basePlaylist.setSync(state);
+        }
+    }
+
+//    public void setPlaylistSyncState(String provider, BasePlaylist playlist, boolean state) {
+//        // if playlist does not exist add it
+//        if (!db.get(provider).stream().anyMatch(temp -> temp.containsKey(playlist))) {
+//            db.get(provider).add(new ConcurrentHashMap<>());
+//            db.get(provider).get(db.get(provider).size() - 1).put(playlist, new CopyOnWriteArrayList<>());
+//        }
+//        playlist.setSync(state);
+//    }
+
+    public boolean getPlaylistSyncState(String provider, String playlistId) {
+        boolean tempBoolean = false;
+        for (ConcurrentHashMap<BasePlaylist, CopyOnWriteArrayList<String>> temp : db.get(provider)) {
+            for (BasePlaylist playlist : temp.keySet()) {
+                if (playlist.getId().equals(playlistId)) {
+                    tempBoolean = playlist.getSync();
+                }
+            }
+        }
+        System.out.println("Playlist " + playlistId + " sync state: " + tempBoolean);
+        return tempBoolean;
+//        return s;
     }
 
     public void performSync(AbstractProvider provider) {

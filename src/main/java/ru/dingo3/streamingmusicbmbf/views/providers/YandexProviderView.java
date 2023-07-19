@@ -1,9 +1,22 @@
 package ru.dingo3.streamingmusicbmbf.views.providers;
 
+import ru.dingo3.streamingmusicbmbf.providers.YandexProvider;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class YandexProviderView implements AbstractProviderView {
+    YandexProvider provider;
+
+    public YandexProviderView(YandexProvider provider) {
+        this.provider = provider;
+    }
+
+    @Override
+    public YandexProvider getProvider() {
+        return provider;
+    }
+
     @Override
     public JPanel getSettingsPanel() {
         JPanel providerSettingsPanel = new JPanel();
@@ -32,3 +45,4 @@ public class YandexProviderView implements AbstractProviderView {
     }
 
 }
+

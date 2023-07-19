@@ -84,6 +84,8 @@ public class YandexMusicClient {
 
     //    public Array<Playlist> getPlaylists() {
     public ArrayList<Playlist> getPlaylists() {
+        if (this.me == null)
+            return new ArrayList<>();
         return this.getPlaylists(this.me.getUid());
     }
 
