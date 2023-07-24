@@ -12,6 +12,8 @@ public class BaseTrack implements Serializable {
 
     String localPath = "";
 
+    String mapPath = "";
+
     Boolean nowSyncing = false;
 
     @Override

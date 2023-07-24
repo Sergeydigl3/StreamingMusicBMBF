@@ -3,7 +3,13 @@ package ru.dingo3.streamingmusicbmbf.converters;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.AllArgsConstructor;
+import org.json.JSONObject;
 import ru.dingo3.streamingmusicbmbf.network.HttpRequest;
+import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 @Setter
 @Getter
@@ -65,14 +71,13 @@ enum ModelVersion {
     private String details;
 }
 
-public class BeatSageCore {
+public class BeatSageCore implements AbstractConverter {
     private Difficulty difficulty;
     private GameModes gameModes;
     private SongEvent songEvent;
     private Environments environments;
     private ModelVersion modelVersion;
 
-    private HttpRequest request;
 
     public BeatSageCore() {
         this.difficulty = new Difficulty();
@@ -80,7 +85,6 @@ public class BeatSageCore {
         this.songEvent = new SongEvent();
         this.environments = Environments.DEFAULT;
         this.modelVersion = ModelVersion.MODEL_V2;
-        this.request = new HttpRequest();
     }
 
     public void setDifficulty(boolean normal, boolean hard, boolean expert, boolean expertPlus) {
@@ -112,33 +116,203 @@ public class BeatSageCore {
         this.modelVersion = modelVersion;
     }
 
-//    public void generate() {
-//        try {
-//            String url = "https://beatsage.com/beatsaber_custom_level_create";
-//            String data = "difficulty=" + this.difficulty.isNormal() + "&difficulty=" + this.difficulty.isHard() + "&difficulty=" + this.difficulty.isExpert() + "&difficulty=" + this.difficulty.isExpertPlus() + "&gameMode=" + this.gameModes.isStandard() + "&gameMode=" + this.gameModes.isOneSaber() + "&gameMode=" + this.gameModes.isNoArrows() + "&gameMode=" + this.gameModes.isNinetyDegree() + "&gameMode=" + this.gameModes.isThreeSixtyDegree() + "&songEvent=" + this.songEvent.isBombs() + "&songEvent=" + this.songEvent.isObstacles() + "&songEvent=" + this.songEvent.isDotBlocks() + "&environment=" + this.environments.getName() + "&modelVersion=" + this.modelVersion.getDetails();
-//            String response = this.request.post(url, data);
-//            JSONObject json = new JSONObject(response);
-//            String downloadUrl = json.getString("downloadUrl");
-//            String songName = json.getString("songName");
-//            String songAuthorName = json.getString("songAuthorName");
-//            String songSubName = json.getString("songSubName");
-//            String songCover = json.getString("songCover");
-//            String songHash = json.getString("songHash");
-//            String levelAuthorName = json.getString("levelAuthorName");
-//            String difficulty = json.getString("difficulty");
-//            String bpm = json.getString("bpm");
-//            String duration = json.getString("duration");
-//            String notes = json.getString("notes");
-//            String obstacles = json.getString("obstacles");
-//            String events = json.getString("events");
-//            String version = json.getString("version");
-//            String download = this.request.get(downloadUrl);
-//            String fileName = songName + " - " + songAuthorName + " - " + songSubName + " (" + levelAuthorName + ") [" + difficulty + "].zip";
-//            Path path = Paths.get(fileName);
-//            Files.write(path, download.getBytes(StandardCharsets.UTF_8));
-//            System.out.println("Downloaded " + fileName);
-//        } catch (Exception e) {
-//            System.out.println("Error: " + e.getMessage());
-//        }
-//    }
+    public String generate(String file_path) throws IOException {
+        String requestUrl = "https://beatsage.com/beatsaber_custom_level_create"; // Replace this with the actual URL
+
+        // Create the boundary string
+        String boundary = "----WebKitFormBoundaryoznqXU2JYvxeyPD8";
+
+        // Prepare the request body
+        StringBuilder requestBody = new StringBuilder();
+
+        // Add audio_file part
+        File audioFile = new File(file_path); // Replace with the actual audio file path
+        requestBody.append("--").append(boundary).append("\r\n");
+        requestBody.append("Content-Disposition: form-data; name=\"audio_file\"; filename=\"")
+                .append(audioFile.getName()).append("\"\r\n");
+        requestBody.append("Content-Type: audio/mpeg\r\n");
+        requestBody.append("\r\n");
+
+        // Add audio_file data
+        FileInputStream audioFileStream = new FileInputStream(audioFile);
+        ByteArrayOutputStream audioBytes = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+        while ((bytesRead = audioFileStream.read(buffer)) != -1) {
+            audioBytes.write(buffer, 0, bytesRead);
+        }
+        requestBody.append(new String(audioBytes.toByteArray(), "ISO-8859-1"));
+        requestBody.append("\r\n");
+
+        // Add other form data parts
+        requestBody.append("--").append(boundary).append("\r\n");
+        requestBody.append("Content-Disposition: form-data; name=\"audio_metadata_title\"\r\n");
+        requestBody.append("\r\n");
+        requestBody.append("VDV - Hello from the Sky! (Rock Version)  ВДВ - С неба привет! (Рок версия).mp3\r\n");
+
+        requestBody.append("--").append(boundary).append("\r\n");
+        requestBody.append("Content-Disposition: form-data; name=\"audio_metadata_artist\"\r\n");
+        requestBody.append("\r\n");
+        requestBody.append("VDV\r\n");
+
+        requestBody.append("--").append(boundary).append("\r\n");
+        requestBody.append("Content-Disposition: form-data; name=\"difficulties\"\r\n");
+        requestBody.append("\r\n");
+        requestBody.append("ExpertPlus,Normal,Hard,Expert\r\n");
+
+        requestBody.append("--").append(boundary).append("\r\n");
+        requestBody.append("Content-Disposition: form-data; name=\"modes\"\r\n");
+        requestBody.append("\r\n");
+        requestBody.append("Standard,NoArrows,OneSaber,90Degree\r\n");
+
+        requestBody.append("--").append(boundary).append("\r\n");
+        requestBody.append("Content-Disposition: form-data; name=\"events\"\r\n");
+        requestBody.append("\r\n");
+        requestBody.append("DotBlocks,Bombs,Obstacles\r\n");
+
+        requestBody.append("--").append(boundary).append("\r\n");
+        requestBody.append("Content-Disposition: form-data; name=\"environment\"\r\n");
+        requestBody.append("\r\n");
+        requestBody.append("DefaultEnvironment\r\n");
+
+        requestBody.append("--").append(boundary).append("\r\n");
+        requestBody.append("Content-Disposition: form-data; name=\"system_tag\"\r\n");
+        requestBody.append("\r\n");
+        requestBody.append("v2-flow\r\n");
+
+        requestBody.append("--").append(boundary).append("--\r\n");
+
+        // Prepare the connection and send the request
+        HttpURLConnection connection = (HttpURLConnection) new URL(requestUrl).openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+        connection.setDoOutput(true);
+        // response to json
+        connection.setRequestProperty("Accept", "application/json");
+
+        OutputStream outputStream = connection.getOutputStream();
+        outputStream.write(requestBody.toString().getBytes("ISO-8859-1"));
+        outputStream.flush();
+        outputStream.close();
+
+        // Get the response
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(connection.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        // parse id from json
+        JSONObject jsonObject = new JSONObject(response.toString());
+        String id = jsonObject.getString("id");
+        return id;
+    }
+
+
+    // Url for heartbeat https://beatsage.com/beatsaber_custom_level_heartbeat/bd4eb26ba4a74af5a2675ef97c873082
+    // This is get request with json response {"status":"PENDING"} or {"status":"DONE"}
+    public void waitResponse(String id) throws IOException, InterruptedException {
+        String url = "https://beatsage.com/beatsaber_custom_level_heartbeat/" + id;
+        while (true) {
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Accept", "application/json");
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+
+            JSONObject jsonObject = new JSONObject(response.toString());
+            String status = jsonObject.getString("status");
+            if (status.equals("DONE")) {
+                System.out.println("DONE");
+                break;
+            }
+            System.out.println("PENDING");
+            Thread.sleep(1000);
+        }
+    }
+
+    public void downloadFile(String id, String downloadPath) throws IOException {
+        String url = "https://beatsage.com/beatsaber_custom_level_download/" + id;
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Accept", "application/zip");
+
+        InputStream inputStream = connection.getInputStream();
+        FileOutputStream fileOutputStream = new FileOutputStream("cache/" + id + ".zip");
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            fileOutputStream.write(buffer, 0, bytesRead);
+        }
+        fileOutputStream.close();
+        inputStream.close();
+    }
+
+
+    public static void main(String[] args) throws IOException {
+        try {
+//            main1();
+//            waitMain2();
+            main3();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void main1() throws IOException {
+        BeatSageCore beatSageCore = new BeatSageCore();
+        beatSageCore.setDifficulty(true, true, true, true);
+        beatSageCore.setGameModes(true, true, true, true, true);
+        beatSageCore.setSongEvent(true, true, true);
+        beatSageCore.setEnvironments(Environments.DEFAULT);
+        beatSageCore.setModelVersion(ModelVersion.MODEL_V2_FLOW);
+//        beatSageCore.generate("cache/yandex/music/101308852.mp3", "cache/file.zip");
+    }
+
+    public static void waitMain2() throws IOException, InterruptedException {
+        BeatSageCore beatSageCore = new BeatSageCore();
+        beatSageCore.waitResponse("bd4eb26ba4a74af5a2675ef97c873082");
+        System.out.println("DONE");
+    }
+
+    public static void main3() {
+        BeatSageCore beatSageCore = new BeatSageCore();
+        try {
+            String id = beatSageCore.generate("cache/yandex/music/101308852.mp3");
+            System.out.println(id);
+            beatSageCore.waitResponse(id);
+            System.out.println("DONE");
+//            beatSageCore.downloadFile(id);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+//        beatSageCore.downloadFile("bd4eb26ba4a74af5a2675ef97c873082");
+    }
+
+    @Override
+    public void convertTrack(BaseTrack track) {
+        try {
+            String id = generate(track.getLocalPath());
+            waitResponse(id);
+            downloadFile(id, track.getMapPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

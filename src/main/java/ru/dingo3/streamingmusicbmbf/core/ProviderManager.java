@@ -2,6 +2,7 @@ package ru.dingo3.streamingmusicbmbf.core;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.dingo3.streamingmusicbmbf.converters.AbstractConverter;
 import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
@@ -29,6 +30,10 @@ public class ProviderManager {
     //    Thread syncThread;
     @Getter
     private ArrayList<AbstractProvider> providers;
+
+    @Getter
+    @Setter
+    private AbstractConverter converter;
 
     @Getter
     private ConcurrentHashMap<String, CopyOnWriteArrayList<ConcurrentHashMap<BasePlaylist, CopyOnWriteArrayList<String>>>> db = new ConcurrentHashMap<>();
@@ -162,13 +167,18 @@ public class ProviderManager {
                     track.setNowSyncing(true);
                     executor.submit(() -> {
                         // switch case pipline
-                        while (track.getSyncState() != SyncState.DOWNLOADED) {
+                        while (track.getSyncState() != SyncState.CONVERTED) {
                             System.out.println("Syncing track: " + track.getTitle() + " " + track.getSyncState());
                             switch (track.getSyncState()) {
                                 case NOT_DOWNLOADED:
                                     track.setSyncState(SyncState.DOWNLOADING);
                                     provider.downloadTrack(playlist, track);
                                     track.setSyncState(SyncState.DOWNLOADED);
+                                    break;
+                                case DOWNLOADED:
+                                    track.setSyncState(SyncState.CONVERSION);
+                                    converter.convertTrack(track);
+                                    track.setSyncState(SyncState.CONVERTED);
                                     break;
                             }
                         }
@@ -230,7 +240,7 @@ public class ProviderManager {
 
     public void performSync(AbstractProvider provider) {
 //        if (!provider.getSync()) return;
-        if (provider.getNowSyncing()) return;
+//        if (provider.getNowSyncing()) return;
         provider.setNowSyncing(true);
 
         getRecentDataPlaylist(provider);
