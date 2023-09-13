@@ -25,9 +25,13 @@ public class AppSettings {
     @Getter
     @Setter
     private String startPage;
+    @Getter
+    @Setter
+    private String converterName;
 
     private AppSettings() {
         setConfigPath(Path.of(System.getProperty("user.home"), ".streamingmusicbmbf", configName));
+        setConverterName("beatsage");
         readConfig();
     }
 
@@ -58,6 +62,7 @@ public class AppSettings {
             // For example, you can set the cachePath and startPage properties
             setCachePath(Path.of(settingsConfig.getCachePath()));
             setStartPage(settingsConfig.getStartPage());
+            setConverterName(settingsConfig.getConverterName());
         } catch (IOException e) {
 //            System.out.println("Error reading config file");
 //            e.printStackTrace();
@@ -81,6 +86,8 @@ public class AppSettings {
             AppSettingsConfig settingsConfig = new AppSettingsConfig();
             settingsConfig.setCachePath(cachePath.toString());
             settingsConfig.setStartPage(startPage);
+            settingsConfig.setConverterName(converterName);
+//            settingsConfig.setConverterName();
             String json = objectMapper.writeValueAsString(settingsConfig);
             Files.writeString(configPath, json);
         } catch (IOException e) {
@@ -93,4 +100,5 @@ public class AppSettings {
 class AppSettingsConfig {
     private String cachePath;
     private String startPage;
+    private String converterName;
 }

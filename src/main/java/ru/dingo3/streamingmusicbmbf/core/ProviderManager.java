@@ -167,7 +167,7 @@ public class ProviderManager {
                     track.setNowSyncing(true);
                     executor.submit(() -> {
                         // switch case pipline
-                        while (track.getSyncState() != SyncState.CONVERTED) {
+                        while (track.getSyncState() != SyncState.DOWNLOADED) {
                             System.out.println("Syncing track: " + track.getTitle() + " " + track.getSyncState());
                             switch (track.getSyncState()) {
                                 case NOT_DOWNLOADED:

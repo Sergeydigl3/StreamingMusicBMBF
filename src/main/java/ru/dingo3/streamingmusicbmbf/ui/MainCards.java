@@ -1,5 +1,7 @@
 package ru.dingo3.streamingmusicbmbf.ui;
 
+import ru.dingo3.streamingmusicbmbf.converters.AbstractConverter;
+import ru.dingo3.streamingmusicbmbf.converters.SingletonConverterArray;
 import ru.dingo3.streamingmusicbmbf.core.ProviderManager;
 import ru.dingo3.streamingmusicbmbf.core.AppSettings;
 import ru.dingo3.streamingmusicbmbf.helpers.CachedImageIconDb;
@@ -29,7 +31,7 @@ import java.util.Objects;
 
 public class MainCards extends JFrame {
     private Image logo;
-//    private final java.util.List<AbstractProvider> providers = new ArrayList<>();
+    //    private final java.util.List<AbstractProvider> providers = new ArrayList<>();
     private JPanel leftPanel;
     private JPanel cardPanel;
     private CardLayout cardLayout;
@@ -47,7 +49,7 @@ public class MainCards extends JFrame {
         setPreferredSize(new Dimension(1000, 600));
 
         providerManager = new ProviderManager();
-        providerManager.setFilePath(appSettings.getCachePath().toString()+"/providers.dat");
+        providerManager.setFilePath(appSettings.getCachePath().toString() + "/providers.dat");
         providerManager.loadDbFromDisk();
         // Create providers
 
@@ -58,6 +60,21 @@ public class MainCards extends JFrame {
 
         providerManager.addProvider(yandexProvider);
 
+//        switch (appSettings.getConverter()) {
+//            case "yandex":
+//                yandexProvider.setConverter(new AbstractConverter() {
+//                    @Override
+//                    public void convertTrack(BaseTrack track) {
+//                        System.out.println("Convert track: " + track.getTrackName());
+//                    }
+//                });
+//                break;
+//            default:
+//                System.out.println("Converter not found");
+//        }
+//
+//        appSettings.
+//        providerManager.set
 
         // Create the card panel with CardLayout
         cardPanel = new JPanel();
@@ -76,7 +93,6 @@ public class MainCards extends JFrame {
         cardLayout.show(cardPanel, appSettings.getStartPage());
 
         add(leftPanel, BorderLayout.WEST);
-
 
 
         add(cardPanel, BorderLayout.CENTER);
@@ -217,8 +233,6 @@ class HomeCard extends JPanel {
         AppInfo.setLayout(new BoxLayout(AppInfo, BoxLayout.Y_AXIS));
 
         AppInfo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-
 
 
 //        JPanel bottomPanel = new JPanel();
@@ -447,8 +461,22 @@ class SettingsDialog extends JDialog {
             }
         }
 
+        // TODO: Convert Providers to Singletone
         defaultPageComboBox.setSelectedItem(selectedElement);
         appSettingsPanel.add(defaultPageComboBox, c);
+
+        JComboBox<ComboBoxElement> defaultConverterComboBox = new JComboBox<>();
+        defaultConverterComboBox.addItem(currentElement);
+        for (AbstractConverter converter : SingletonConverterArray.getInstance().getConverters()) {
+            currentElement = new ComboBoxElement(converter.getConverterName(), converter.getConverterId());
+            defaultConverterComboBox.addItem(currentElement);
+            if (currentElement.getValue().equals(appSettings.getConverterName())) {
+                selectedElement = currentElement;
+            }
+        }
+
+        defaultConverterComboBox.setSelectedItem(selectedElement);
+        appSettingsPanel.add(defaultConverterComboBox, c);
 
 
         centerPanel.add(appSettingsPanel, center);
@@ -481,16 +509,6 @@ class SettingsDialog extends JDialog {
         bottomPanel.add(saveButton, BorderLayout.EAST);
 
         add(bottomPanel, BorderLayout.SOUTH);
-
-
-
-
-
-
-
-
-
-
 
 
     }
