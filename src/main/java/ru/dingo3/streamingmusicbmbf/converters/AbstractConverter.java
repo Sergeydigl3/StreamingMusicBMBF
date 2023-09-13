@@ -4,8 +4,11 @@ import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
 
 public interface AbstractConverter {
-    void convertTrack(BaseTrack track);
+    void convertTrack(String providerId, BaseTrack track);
 
     String getConverterId();
     String getConverterName();
+
+    void setMapsPath(String mapsPath);
+    String getMapsPath();
 }

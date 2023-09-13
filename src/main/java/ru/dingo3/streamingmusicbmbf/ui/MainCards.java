@@ -44,7 +44,13 @@ public class MainCards extends JFrame {
         logo = Toolkit.getDefaultToolkit().getImage("media/logo2.png");
         setIconImage(logo);
         setTitle("Main Cards");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                providerManager.saveDbToDisk();
+                System.exit(0);
+            }
+        });
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(1000, 600));
 
@@ -75,6 +81,19 @@ public class MainCards extends JFrame {
 //
 //        appSettings.
 //        providerManager.set
+        providerManager.setConverter(SingletonConverterArray.getInstance().getConverterById(appSettings.getConverterId()));
+        String mapsPath = appSettings.getCachePath().toString() + "/maps";
+        // Check maps folder for exist. If not exist - create it. mapsPath - is a folder. DO NOT CHECK parent folder.
+        if (!new java.io.File(mapsPath).exists()) {
+            System.out.println("Create maps folder");
+            new java.io.File(mapsPath).mkdirs();
+        }
+
+
+
+
+
+        SingletonConverterArray.getInstance().setMapsPath(mapsPath);
 
         // Create the card panel with CardLayout
         cardPanel = new JPanel();
@@ -465,12 +484,23 @@ class SettingsDialog extends JDialog {
         defaultPageComboBox.setSelectedItem(selectedElement);
         appSettingsPanel.add(defaultPageComboBox, c);
 
+        c.gridx = 0;
+        c.gridy = 2;
+        c.weightx = 1;
+        appSettingsPanel.add(new JLabel("Default converter:"), c);
+        c.gridx = 1;
+        c.gridy = 2;
+        c.weightx = 8;
+
+
+
+
         JComboBox<ComboBoxElement> defaultConverterComboBox = new JComboBox<>();
-        defaultConverterComboBox.addItem(currentElement);
+//        defaultConverterComboBox.addItem(currentElement);
         for (AbstractConverter converter : SingletonConverterArray.getInstance().getConverters()) {
             currentElement = new ComboBoxElement(converter.getConverterName(), converter.getConverterId());
             defaultConverterComboBox.addItem(currentElement);
-            if (currentElement.getValue().equals(appSettings.getConverterName())) {
+            if (currentElement.getValue().equals(appSettings.getConverterId())) {
                 selectedElement = currentElement;
             }
         }
@@ -503,6 +533,7 @@ class SettingsDialog extends JDialog {
 
             appSettings.setCachePath(Paths.get(cachePathTextField.getText()));
             appSettings.setStartPage(((ComboBoxElement) Objects.requireNonNull(defaultPageComboBox.getSelectedItem())).getValue());
+            appSettings.setConverterId(((ComboBoxElement) Objects.requireNonNull(defaultConverterComboBox.getSelectedItem())).getValue());
             appSettings.saveConfig();
             dispose();
         });

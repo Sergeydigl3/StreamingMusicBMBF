@@ -72,6 +72,7 @@ enum ModelVersion {
 }
 
 public class BeatSageCore implements AbstractConverter {
+    private String mapsPath;
     private Difficulty difficulty;
     private GameModes gameModes;
     private SongEvent songEvent;
@@ -247,7 +248,8 @@ public class BeatSageCore implements AbstractConverter {
         connection.setRequestProperty("Accept", "application/zip");
 
         InputStream inputStream = connection.getInputStream();
-        FileOutputStream fileOutputStream = new FileOutputStream("cache/" + id + ".zip");
+//        FileOutputStream fileOutputStream = new FileOutputStream("cache/" + id + ".zip");
+        FileOutputStream fileOutputStream = new FileOutputStream(downloadPath);
         byte[] buffer = new byte[4096];
         int bytesRead;
         while ((bytesRead = inputStream.read(buffer)) != -1) {
@@ -304,11 +306,14 @@ public class BeatSageCore implements AbstractConverter {
     }
 
     @Override
-    public void convertTrack(BaseTrack track) {
+    public void convertTrack(String providerId, BaseTrack track) {
         try {
             String id = generate(track.getLocalPath());
             waitResponse(id);
-            downloadFile(id, track.getMapPath());
+            String downloadPath = getMapsPath() + "/" + providerId + "-" +track.getArtist() + "-" + track.getTitle() + " (" + track.getId()+ ")" + ".zip";
+            System.out.println(downloadPath);
+            downloadFile(id, downloadPath);
+            track.setLocalPath(downloadPath);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -324,5 +329,15 @@ public class BeatSageCore implements AbstractConverter {
     @Override
     public String getConverterName() {
         return "BeatSage";
+    }
+
+    @Override
+    public void setMapsPath(String mapsPath){
+        this.mapsPath = mapsPath;
+    }
+
+    @Override
+    public String getMapsPath(){
+        return mapsPath;
     }
 }

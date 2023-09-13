@@ -10,7 +10,8 @@ public class SingletonConverterArray {
     private final ArrayList<AbstractConverter> converters = new ArrayList<>();
 
     private SingletonConverterArray() {
-        converters.add(new BeatSageCore());
+        AbstractConverter beatsage = new BeatSageCore();
+        converters.add(beatsage);
     }
 
     public static SingletonConverterArray getInstance() {
@@ -40,5 +41,11 @@ public class SingletonConverterArray {
             }
         }
         return null;
+    }
+
+    public void setMapsPath(String mapsPath) {
+        for (AbstractConverter converter : converters) {
+            converter.setMapsPath(mapsPath);
+        }
     }
 }

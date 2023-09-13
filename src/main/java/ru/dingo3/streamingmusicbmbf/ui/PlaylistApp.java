@@ -262,18 +262,22 @@ class MusicList extends JScrollPane {
             public void run() {
                 while (true) {
                     if (labelStorage.size() > 0) {
-                        System.out.println("Terminator is running");
                         ArrayList<BaseTrack> tracksByIds = providerManager.getTracksByIds(provider.getProviderId(), trackIds);
                         for (BaseTrack track : tracksByIds) {
                             if (labelStorage.containsKey(track)) {
                                 JLabel label = labelStorage.get(track);
                                 if (label != null) {
+                                    // TODO: replace to switch
                                     if (track.getSyncState() == SyncState.DOWNLOADED) {
                                         label.setText("Downloaded");
                                     } else if (track.getSyncState() == SyncState.DOWNLOADING) {
                                         label.setText("Downloading");
                                     } else if (track.getSyncState() == SyncState.NOT_DOWNLOADED) {
                                         label.setText("Not downloaded");
+                                    } else if (track.getSyncState() == SyncState.CONVERSION) {
+                                        label.setText("Converting");
+                                    } else if (track.getSyncState() == SyncState.CONVERTED) {
+                                        label.setText("Converted");
                                     }
                                 }
                             }

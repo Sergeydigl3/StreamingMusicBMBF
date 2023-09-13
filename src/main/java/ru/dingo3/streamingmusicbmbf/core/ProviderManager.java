@@ -1,5 +1,6 @@
 package ru.dingo3.streamingmusicbmbf.core;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
 import ru.dingo3.streamingmusicbmbf.converters.AbstractConverter;
@@ -9,6 +10,8 @@ import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
 import ru.dingo3.streamingmusicbmbf.providers.models.SyncState;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,12 +58,23 @@ public class ProviderManager {
 //            if (!directory.exists()) {
 //                directory.mkdirs();
 //            }
+
             FileOutputStream fileOut = new FileOutputStream(filePath);
             ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
             objectOut.writeObject(db);
             objectOut.writeObject(tracksDb);
             objectOut.close();
             fileOut.close();
+            // save to json
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            String json = objectMapper.writeValueAsString(db);
+//            String json2 = objectMapper.writeValueAsString(tracksDb);
+//            FileWriter fileWriter = new FileWriter(filePath);
+//            fileWriter.write(json);
+//            fileWriter.write(json2);
+//            fileWriter.close();
+
+
             System.out.println("Database saved successfully to disk.");
         } catch (IOException e) {
             e.printStackTrace();
@@ -80,10 +94,22 @@ public class ProviderManager {
             tracksDb = (ConcurrentHashMap<String, CopyOnWriteArrayList<BaseTrack>>) objectIn.readObject();
             objectIn.close();
             fileIn.close();
+
+            // load data from json
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            String json = new String(Files.readAllBytes(Paths.get(filePath)));
+//            db = objectMapper.readValue(json, ConcurrentHashMap.class);
+//            tracksDb = objectMapper.readValue(json, ConcurrentHashMap.class);
+
+
             System.out.println("Database loaded successfully from disk.");
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void addProvider(AbstractProvider provider) {
@@ -96,7 +122,7 @@ public class ProviderManager {
 //        this.syncState = syncState;
 //    }
 
-//    public ArrayList<AbstractProvider> getProviders() {
+    //    public ArrayList<AbstractProvider> getProviders() {
 //        return new ArrayList<>(db.keySet());
 //    }
     public ArrayList<BaseTrack> getTracksByIds(String providerId, ArrayList<String> trackIds) {
@@ -108,6 +134,7 @@ public class ProviderManager {
         });
         return tracks;
     }
+
     public void getRecentDataPlaylist(AbstractProvider provider) {
 //        db.putIfAbsent(provider, new CopyOnWriteArrayList<>());
         AtomicInteger playlists = new AtomicInteger();
@@ -167,7 +194,7 @@ public class ProviderManager {
                     track.setNowSyncing(true);
                     executor.submit(() -> {
                         // switch case pipline
-                        while (track.getSyncState() != SyncState.DOWNLOADED) {
+                        while (track.getSyncState() != SyncState.CONVERTED) {
                             System.out.println("Syncing track: " + track.getTitle() + " " + track.getSyncState());
                             switch (track.getSyncState()) {
                                 case NOT_DOWNLOADED:
@@ -177,8 +204,10 @@ public class ProviderManager {
                                     break;
                                 case DOWNLOADED:
                                     track.setSyncState(SyncState.CONVERSION);
-                                    converter.convertTrack(track);
+                                    converter.convertTrack(provider.getProviderId(), track);
                                     track.setSyncState(SyncState.CONVERTED);
+                                    break;
+                                case CONVERTED:
                                     break;
                             }
                         }
@@ -190,7 +219,8 @@ public class ProviderManager {
             });
         });
     }
-    public void setPlaylistSyncState(String provider, String basePlaylistId, boolean state){
+
+    public void setPlaylistSyncState(String provider, String basePlaylistId, boolean state) {
         BasePlaylist basePlaylist = new BasePlaylist();
         basePlaylist.setId(basePlaylistId);
         setPlaylistSyncState(provider, basePlaylist, state);
