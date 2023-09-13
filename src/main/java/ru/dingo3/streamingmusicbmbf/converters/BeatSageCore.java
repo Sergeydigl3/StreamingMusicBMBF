@@ -315,4 +315,14 @@ public class BeatSageCore implements AbstractConverter {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public String getConverterId() {
+        return "beatsage";
+    }
+
+    @Override
+    public String getConverterName() {
+        return "BeatSage";
+    }
 }
