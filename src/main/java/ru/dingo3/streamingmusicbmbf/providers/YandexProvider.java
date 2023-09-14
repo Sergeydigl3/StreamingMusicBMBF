@@ -1,5 +1,6 @@
 package ru.dingo3.streamingmusicbmbf.providers;
 
+import com.mpatric.mp3agic.*;
 import lombok.Data;
 import org.json.JSONObject;
 import ru.dingo3.streamingmusicbmbf.libs.YandexMusicClient;
@@ -8,7 +9,10 @@ import ru.dingo3.streamingmusicbmbf.models.PlaylistsResponse;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
 
+import java.io.InputStream;
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -118,8 +122,7 @@ public class YandexProvider implements AbstractProvider, Serializable {
                 track.setTitle(ymTrack.getTrack().getTitle());
                 track.setArtist(ymTrack.getTrack().getArtists().get(0).getName());
 
-
-//                track.setImage("https://"+ymTrack.getOgImage().replace("%%", "400x400"));
+                track.setCoverUrl("https://"+ymTrack.getTrack().getOgImage().replace("%%", "400x400"));
                 tracks.add(track);
             }
         }
@@ -140,7 +143,34 @@ public class YandexProvider implements AbstractProvider, Serializable {
         System.out.println("YandexProvider: downloadTrack: " + track.getTitle());
         Path trackPath = Paths.get(cachePath.toString(), "/music/", track.getId() + ".mp3");
         yandexMusicClient.downloadTrack(track.getId(), trackPath.toString());
+        try {
+            Mp3File mp3file = new Mp3File(trackPath.toString());
+            ID3v2 id3v2Tag = new ID3v23Tag();
+//            ID3v2 id3v2Tag = mp3file.getId3v2Tag();
+//            mp3file.setId3v2Tag();
+
+            HttpURLConnection connection = (HttpURLConnection) new URL(track.getCoverUrl()).openConnection();
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+            connection.setRequestProperty("Accept", "image/jpeg");
+            connection.setRequestMethod("GET");
+            InputStream inputStream = connection.getInputStream();
+            byte[] imageData = inputStream.readAllBytes();
+
+
+            id3v2Tag.setAlbumImage(imageData, "image/jpeg");
+            id3v2Tag.setTitle(track.getTitle());
+            id3v2Tag.setArtist(track.getArtist());
+            mp3file.setId3v2Tag(id3v2Tag);
+            mp3file.save(trackPath.toString()+".mp3");
+            // Remove old file
+            Files.deleteIfExists(trackPath);
+            Files.move(Paths.get(trackPath.toString()+".mp3"), trackPath);
+        } catch (Exception e) {
+            System.out.println("YandexProvider: downloadTrack: ERROR " + e.getMessage());
+        }
+
         track.setLocalPath(trackPath.toString());
+
     }
 
     @Override

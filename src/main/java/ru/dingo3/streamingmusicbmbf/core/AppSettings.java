@@ -28,10 +28,15 @@ public class AppSettings {
     @Getter
     @Setter
     private String converterId;
+    @Getter
+    @Setter
+    private boolean deliveryBMBF;
+    @Getter
+    @Setter
+    private String bmbfApiUrl;
 
     private AppSettings() {
         setConfigPath(Path.of(System.getProperty("user.home"), ".streamingmusicbmbf", configName));
-        setConverterId("beatsage");
         readConfig();
     }
 
@@ -62,12 +67,17 @@ public class AppSettings {
             // For example, you can set the cachePath and startPage properties
             setCachePath(Path.of(settingsConfig.getCachePath()));
             setStartPage(settingsConfig.getStartPage());
-            setConverterId(settingsConfig.getConverterName());
+            setConverterId(settingsConfig.getConverterId());
+            setDeliveryBMBF(settingsConfig.isDeliveryBMBF());
+            setBmbfApiUrl(settingsConfig.getBmbfApiUrl());
         } catch (IOException e) {
 //            System.out.println("Error reading config file");
 //            e.printStackTrace();
             setCachePath(Path.of(System.getProperty("user.home"), ".streamingmusicbmbf", "cache"));
             setStartPage("home");
+            setConverterId("beatsage");
+            setDeliveryBMBF(false);
+            setBmbfApiUrl("http://localhost:5000");
         }
 
         // if cache path does not exist, create it
@@ -86,7 +96,9 @@ public class AppSettings {
             AppSettingsConfig settingsConfig = new AppSettingsConfig();
             settingsConfig.setCachePath(cachePath.toString());
             settingsConfig.setStartPage(startPage);
-            settingsConfig.setConverterName(converterId);
+            settingsConfig.setConverterId(converterId);
+            settingsConfig.setDeliveryBMBF(deliveryBMBF);
+            settingsConfig.setBmbfApiUrl(bmbfApiUrl);
 //            settingsConfig.setConverterName();
             String json = objectMapper.writeValueAsString(settingsConfig);
             Files.writeString(configPath, json);
@@ -100,5 +112,7 @@ public class AppSettings {
 class AppSettingsConfig {
     private String cachePath;
     private String startPage;
-    private String converterName;
+    private String converterId;
+    private boolean deliveryBMBF;
+    private String bmbfApiUrl;
 }

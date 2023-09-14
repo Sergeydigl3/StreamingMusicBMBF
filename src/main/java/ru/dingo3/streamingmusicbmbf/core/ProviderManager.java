@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
 import ru.dingo3.streamingmusicbmbf.converters.AbstractConverter;
+import ru.dingo3.streamingmusicbmbf.delivery.BMBFDelivery;
 import ru.dingo3.streamingmusicbmbf.providers.AbstractProvider;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
@@ -21,7 +22,7 @@ public class ProviderManager {
     @Getter
     private boolean syncState = false;
 
-    private static final int nThreads = 2;
+    private static final int nThreads = 5;
     @Setter
     @Getter
     private Integer syncDelay = 1000;
@@ -183,6 +184,9 @@ public class ProviderManager {
 
     public void processTracks(AbstractProvider provider) {
         String providerId = provider.getProviderId();
+        boolean delivery = AppSettings.getInstance().isDeliveryBMBF();
+        String deliveryPath = AppSettings.getInstance().getBmbfApiUrl();
+        BMBFDelivery bmbfDelivery = new BMBFDelivery(deliveryPath);
         db.get(providerId).forEach(temp -> {
             temp.keySet().forEach(playlist -> {
                 if (!playlist.getSync()) return;
@@ -192,9 +196,12 @@ public class ProviderManager {
                     if (track == null) return;
                     if (track.getNowSyncing()) return;
                     track.setNowSyncing(true);
+
+
                     executor.submit(() -> {
                         // switch case pipline
-                        while (track.getSyncState() != SyncState.CONVERTED) {
+                        boolean error = false;
+                        while (track.getSyncState() != (delivery ? SyncState.SYNCED : SyncState.CONVERTED) && !error) {
                             System.out.println("Syncing track: " + track.getTitle() + " " + track.getSyncState());
                             switch (track.getSyncState()) {
                                 case NOT_DOWNLOADED:
@@ -208,6 +215,24 @@ public class ProviderManager {
                                     track.setSyncState(SyncState.CONVERTED);
                                     break;
                                 case CONVERTED:
+                                    track.setSyncState(SyncState.SYNCING);
+                                    for (int i = 0; i < 3; i++) {
+                                        try {
+                                            int res = bmbfDelivery.deliver(playlist, track);
+                                            System.out.println("BMBF delivery result: " + res);
+                                            if ( res== 204)
+                                                track.setSyncState(SyncState.SYNCED);
+                                            else{
+                                                track.setSyncState(SyncState.CONVERTED);
+                                                error = true;
+                                            }
+                                            break;
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            track.setSyncState(SyncState.CONVERTED);
+                                            error = true;
+                                        }
+                                    }
                                     break;
                             }
                         }

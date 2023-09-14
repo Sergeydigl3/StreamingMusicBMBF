@@ -8,6 +8,7 @@ public class BaseTrack implements Serializable {
     String id;
     String title;
     String artist;
+    String coverUrl= "";
     SyncState syncState = SyncState.NOT_DOWNLOADED;
 
     String localPath = "";

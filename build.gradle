@@ -31,8 +31,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     implementation 'org.json:json:20230227'
-
-
+    implementation 'ru.homyakin:iuliia-java:1.8'
+    implementation group: 'com.mpatric', name: 'mp3agic', version: '0.9.0'
 }
 
 application {

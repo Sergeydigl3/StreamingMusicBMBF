@@ -53,6 +53,7 @@ import java.util.concurrent.Executors;
 
 public class PlaylistApp extends JDialog {
     private PlaylistHeader header;
+    private Image logo;
 //    private CachedImageIconDb cashedImageIconDb;
 
     ExecutorService executorService = Executors.newFixedThreadPool(1);
@@ -60,7 +61,9 @@ public class PlaylistApp extends JDialog {
     public PlaylistApp(AbstractProvider provider, BasePlaylist playlist, ProviderManager providerManager) {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(800, 400));
-
+        setTitle(playlist.getTitle());
+        logo = Toolkit.getDefaultToolkit().getImage("media/logo2.png");
+        setIconImage(logo);
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -278,6 +281,12 @@ class MusicList extends JScrollPane {
                                         label.setText("Converting");
                                     } else if (track.getSyncState() == SyncState.CONVERTED) {
                                         label.setText("Converted");
+                                    } else if (track.getSyncState() == SyncState.SYNCING) {
+                                        label.setText("Syncing");
+                                    } else if (track.getSyncState() == SyncState.SYNCED) {
+                                        label.setText("Synced");
+                                    } else {
+                                        label.setText("Unknown");
                                     }
                                 }
                             }

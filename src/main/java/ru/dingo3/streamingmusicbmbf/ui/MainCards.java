@@ -43,7 +43,7 @@ public class MainCards extends JFrame {
         // Load the logo image.
         logo = Toolkit.getDefaultToolkit().getImage("media/logo2.png");
         setIconImage(logo);
-        setTitle("Main Cards");
+        setTitle("BMBF Streaming Music");
 //        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent e) {
@@ -373,6 +373,7 @@ class PlaylistPanel extends JPanel {
         setBorder(BorderFactory.createEmptyBorder(10, 20, 15, 15));
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(200, 200));
+
 //        setMinimumSize(new Dimension(150, 150));
 //        setMaximumSize(new Dimension(150, 150));
 //        setSize(new Dimension(150, 150));
@@ -508,6 +509,31 @@ class SettingsDialog extends JDialog {
         defaultConverterComboBox.setSelectedItem(selectedElement);
         appSettingsPanel.add(defaultConverterComboBox, c);
 
+        // Is delivery enabled
+        c.gridx = 0;
+        c.gridy = 3;
+        c.weightx = 1;
+        appSettingsPanel.add(new JLabel("Enable delivery:"), c);
+        c.gridx = 1;
+        c.gridy = 3;
+        c.weightx = 8;
+        JCheckBox enableDeliveryCheckBox = new JCheckBox();
+        enableDeliveryCheckBox.setSelected(appSettings.isDeliveryBMBF());
+        appSettingsPanel.add(enableDeliveryCheckBox, c);
+
+        // Delivery path
+        c.gridx = 0;
+        c.gridy = 4;
+        c.weightx = 1;
+        appSettingsPanel.add(new JLabel("Delivery path:"), c);
+        c.gridx = 1;
+        c.gridy = 4;
+        c.weightx = 8;
+        JTextField deliveryPathTextField = new JTextField(appSettings.getBmbfApiUrl());
+//        deliveryPathTextField.setText(appSettings.getBmbfApiUrl());
+        appSettingsPanel.add(deliveryPathTextField, c);
+
+
 
         centerPanel.add(appSettingsPanel, center);
         for (AbstractProviderView providerView : providers) {
@@ -534,6 +560,8 @@ class SettingsDialog extends JDialog {
             appSettings.setCachePath(Paths.get(cachePathTextField.getText()));
             appSettings.setStartPage(((ComboBoxElement) Objects.requireNonNull(defaultPageComboBox.getSelectedItem())).getValue());
             appSettings.setConverterId(((ComboBoxElement) Objects.requireNonNull(defaultConverterComboBox.getSelectedItem())).getValue());
+            appSettings.setDeliveryBMBF(enableDeliveryCheckBox.isSelected());
+            appSettings.setBmbfApiUrl(deliveryPathTextField.getText());
             appSettings.saveConfig();
             dispose();
         });

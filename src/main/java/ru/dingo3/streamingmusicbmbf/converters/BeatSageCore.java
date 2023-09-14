@@ -1,5 +1,12 @@
 package ru.dingo3.streamingmusicbmbf.converters;
 
+import com.mpatric.mp3agic.ID3v2;
+import com.mpatric.mp3agic.InvalidDataException;
+import com.mpatric.mp3agic.Mp3File;
+import com.mpatric.mp3agic.UnsupportedTagException;
+import ru.homyakin.iuliia.Schemas;
+import ru.homyakin.iuliia.Translator;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.AllArgsConstructor;
@@ -10,6 +17,9 @@ import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 @Setter
 @Getter
@@ -117,7 +127,7 @@ public class BeatSageCore implements AbstractConverter {
         this.modelVersion = modelVersion;
     }
 
-    public String generate(String file_path) throws IOException {
+    public String generate(String file_path, String title, String artist) throws IOException {
         String requestUrl = "https://beatsage.com/beatsaber_custom_level_create"; // Replace this with the actual URL
 
         // Create the boundary string
@@ -145,16 +155,21 @@ public class BeatSageCore implements AbstractConverter {
         requestBody.append(new String(audioBytes.toByteArray(), "ISO-8859-1"));
         requestBody.append("\r\n");
 
+        var translator = new Translator(Schemas.ICAO_DOC_9303);
+
         // Add other form data parts
         requestBody.append("--").append(boundary).append("\r\n");
         requestBody.append("Content-Disposition: form-data; name=\"audio_metadata_title\"\r\n");
         requestBody.append("\r\n");
-        requestBody.append("VDV - Hello from the Sky! (Rock Version)  ВДВ - С неба привет! (Рок версия).mp3\r\n");
+        requestBody.append(translator.translate(title));
+        requestBody.append("\r\n");
 
         requestBody.append("--").append(boundary).append("\r\n");
         requestBody.append("Content-Disposition: form-data; name=\"audio_metadata_artist\"\r\n");
         requestBody.append("\r\n");
-        requestBody.append("VDV\r\n");
+        requestBody.append(translator.translate(artist));
+        requestBody.append("\r\n");
+//        requestBody.append("VDV\r\n");
 
         requestBody.append("--").append(boundary).append("\r\n");
         requestBody.append("Content-Disposition: form-data; name=\"difficulties\"\r\n");
@@ -260,16 +275,16 @@ public class BeatSageCore implements AbstractConverter {
     }
 
 
-    public static void main(String[] args) throws IOException {
-        try {
-//            main1();
-//            waitMain2();
-            main3();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
+//    public static void main(String[] args) throws IOException {
+//        try {
+////            main1();
+////            waitMain2();
+////            main3();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
 
     public static void main1() throws IOException {
         BeatSageCore beatSageCore = new BeatSageCore();
@@ -287,37 +302,123 @@ public class BeatSageCore implements AbstractConverter {
         System.out.println("DONE");
     }
 
-    public static void main3() {
-        BeatSageCore beatSageCore = new BeatSageCore();
-        try {
-            String id = beatSageCore.generate("cache/yandex/music/101308852.mp3");
-            System.out.println(id);
-            beatSageCore.waitResponse(id);
-            System.out.println("DONE");
-//            beatSageCore.downloadFile(id);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+//    public static void main3() {
+//        BeatSageCore beatSageCore = new BeatSageCore();
+//        try {
+////            String id = beatSageCore.generate("cache/yandex/music/101308852.mp3");
+//            System.out.println(id);
+//            beatSageCore.waitResponse(id);
+//            System.out.println("DONE");
+////            beatSageCore.downloadFile(id);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//
+//
+////        beatSageCore.downloadFile("bd4eb26ba4a74af5a2675ef97c873082");
+//    }
+
+    public void replaceCover(String zipPath, String mp3FilePath) throws IOException, InvalidDataException, UnsupportedTagException {
+        Mp3File mp3File = new Mp3File(mp3FilePath);
+        if (mp3File.hasId3v2Tag()) {
+            ID3v2 id3v2Tag = mp3File.getId3v2Tag();
+            byte[] imageData = id3v2Tag.getAlbumImage();
+            if (imageData != null) {
+                File zipFile = new File(zipPath);
+                File tempFile = new File(zipPath + ".tmp");
+
+                ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
+                ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tempFile));
+
+                ZipEntry entry = zis.getNextEntry();
+                while (entry != null) {
+                    String name = entry.getName();
+                    if (!name.equals("cover.jpg")) {
+                        zos.putNextEntry(new ZipEntry(name));
+                        byte[] buffer = new byte[1024];
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            zos.write(buffer, 0, len);
+                        }
+                    }
+                    entry = zis.getNextEntry();
+                }
+                zis.close();
+
+                ZipEntry newEntry = new ZipEntry("cover.jpg");
+                zos.putNextEntry(newEntry);
+                zos.write(imageData);
+                zos.close();
+
+                if (zipFile.delete()) {
+                    tempFile.renameTo(zipFile);
+                }
+            }
         }
 
 
-//        beatSageCore.downloadFile("bd4eb26ba4a74af5a2675ef97c873082");
+//        File zipFile = new File("path/to/zip/file.zip");
+//        File fileToReplace = new File("path/to/file/to/replace.txt");
+//        File tempFile = new File("path/to/temp/file.txt");
+//
+//        ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
+//        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tempFile));
+//
+//        ZipEntry entry = zis.getNextEntry();
+//        while (entry != null) {
+//            String name = entry.getName();
+//            if (!name.equals("cover.jpg")) {
+//                zos.putNextEntry(new ZipEntry(name));
+//                byte[] buffer = new byte[1024];
+//                int len;
+//                while ((len = zis.read(buffer)) > 0) {
+//                    zos.write(buffer, 0, len);
+//                }
+//            }
+//            entry = zis.getNextEntry();
+//        }
+//        zis.close();
+//
+//        ZipEntry newEntry = new ZipEntry(fileToReplace.getName());
+//        zos.putNextEntry(newEntry);
+//        FileInputStream fis = new FileInputStream(fileToReplace);
+//        byte[] buffer = new byte[1024];
+//        int len;
+//        while ((len = fis.read(buffer)) > 0) {
+//            zos.write(buffer, 0, len);
+//        }
+//        fis.close();
+//
+//        zos.closeEntry();
+//        zos.close();
+//
+//        if (!zipFile.delete()) {
+//            throw new IOException("Could not delete original zip file");
+//        }
+//
+//        if (!tempFile.renameTo(zipFile)) {
+//            throw new IOException("Could not rename temporary file");
+//        }
     }
 
     @Override
     public void convertTrack(String providerId, BaseTrack track) {
         try {
-            String id = generate(track.getLocalPath());
+            String id = generate(track.getLocalPath(), track.getTitle(), track.getArtist());
             waitResponse(id);
-            String downloadPath = getMapsPath() + "/" + providerId + "-" +track.getArtist() + "-" + track.getTitle() + " (" + track.getId()+ ")" + ".zip";
+            String downloadPath = getMapsPath() + "/" + providerId + "-beatsage-" + track.getArtist() + "-" + track.getTitle() + " (" + track.getId() + ")" + ".zip";
             System.out.println(downloadPath);
             downloadFile(id, downloadPath);
-            track.setLocalPath(downloadPath);
-        } catch (IOException e) {
+            replaceCover(downloadPath, track.getLocalPath());
+            track.setMapPath(downloadPath);
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InvalidDataException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedTagException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -332,12 +433,12 @@ public class BeatSageCore implements AbstractConverter {
     }
 
     @Override
-    public void setMapsPath(String mapsPath){
+    public void setMapsPath(String mapsPath) {
         this.mapsPath = mapsPath;
     }
 
     @Override
-    public String getMapsPath(){
+    public String getMapsPath() {
         return mapsPath;
     }
 }
