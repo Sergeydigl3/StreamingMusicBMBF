@@ -2,6 +2,8 @@ package ru.dingo3.streamingmusicbmbf.providers;
 
 import com.mpatric.mp3agic.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.json.JSONObject;
 import ru.dingo3.streamingmusicbmbf.libs.YandexMusicClient;
 import ru.dingo3.streamingmusicbmbf.models.PlaylistResponse;
@@ -37,17 +39,20 @@ public class YandexProvider implements AbstractProvider, Serializable {
         return sync;
     }
 
+    @Getter
+    @Setter
     private String token; // TODO: Implement token in settings
 
     public YandexProvider(Path cachePath) {
-        token = System.getenv("YM_TOKEN"); // TODO: Remove env set
+//        token = System.getenv("YM_TOKEN"); // TODO: Remove env set
         this.cachePath = Paths.get(cachePath.toString(), providerId);
+        loadConfig();
 //        System.out.println("YandexProvider: " + cachePath);
         yandexMusicClient = new YandexMusicClient(token);
         yandexMusicClient.init();
     }
 
-    private void loadConfig() {
+    public void loadConfig() {
         Path configPath = Paths.get(cachePath.toString(), "config.json");
         if (Files.exists(configPath)) {
             try {
@@ -60,7 +65,7 @@ public class YandexProvider implements AbstractProvider, Serializable {
         }
     }
 
-    private void saveConfig() {
+    public void saveConfig() {
         JSONObject configJson = new JSONObject();
         configJson.put("token", token);
         Path configPath = Paths.get(cachePath.toString(), "config.json");
@@ -69,6 +74,11 @@ public class YandexProvider implements AbstractProvider, Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+    public String getUsername() {
+        return yandexMusicClient.getMe().getLogin();
     }
 
     @Override
@@ -95,8 +105,6 @@ public class YandexProvider implements AbstractProvider, Serializable {
 //            System.out.println("YandexProvider: getPlaylists: " + ymPlaylistItem.getOgImage());
             if (
                     ymPlaylistItem.getOgImage().isEmpty()
-                            || ymPlaylistItem.getOgImage().equals("avatars.yandex.net/get-music-user-playlist/27701/273593788.1029.15216/%%?1662069740465")
-                            || ymPlaylistItem.getOgImage().equals("avatars.yandex.net/get-music-user-playlist/69910/273593788.1025.6885/%%?1654365788995")
             )
                 playlist.setImage("https://raw.githubusercontent.com/Sergeydigl3/StreamingMusicBMBF/main/playlist1.jpg");
             else

@@ -77,7 +77,7 @@ public class AppSettings {
             setStartPage("home");
             setConverterId("beatsage");
             setDeliveryBMBF(false);
-            setBmbfApiUrl("http://localhost:5000");
+            setBmbfApiUrl("192.168.1.104:50000");
         }
 
         // if cache path does not exist, create it

@@ -37,4 +37,8 @@ public interface AbstractProvider {
     boolean getNowSyncing();
 
     void setNowSyncing(boolean nowSyncing);
+
+    void loadConfig();
+
+    void saveConfig();
 }
