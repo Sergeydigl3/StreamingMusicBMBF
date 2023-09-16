@@ -8,14 +8,25 @@ import java.awt.*;
 public class YandexProviderView implements AbstractProviderView {
     YandexProvider provider;
 
+    JTextField tokenField;
+
     public YandexProviderView(YandexProvider provider) {
         this.provider = provider;
+        tokenField = new JTextField();
+        tokenField.setText(provider.getToken());
     }
 
     @Override
     public YandexProvider getProvider() {
         return provider;
     }
+
+    @Override
+    public String getLeftTitleText() {
+        return "You are logged in as " + provider.getUsername();
+    }
+
+
 
     @Override
     public JPanel getSettingsPanel() {
@@ -27,7 +38,7 @@ public class YandexProviderView implements AbstractProviderView {
         inputTokenPanel.setLayout(new BorderLayout());
 
         JLabel tokenLabel = new JLabel("Токен");
-        JTextField tokenField = new JTextField();
+
 //        tokenField.setMaximumSize(tokenField.getPreferredSize());
         inputTokenPanel.add(tokenLabel, BorderLayout.WEST);
         inputTokenPanel.add(tokenField, BorderLayout.CENTER);
@@ -44,5 +55,13 @@ public class YandexProviderView implements AbstractProviderView {
         return false;
     }
 
+//    private void loadSettings(){
+//        tokenField.setText(provider.getToken());
+//    }
+
+    public void saveSettings() {
+        provider.setToken(tokenField.getText());
+        provider.saveConfig();
+    }
 }
 

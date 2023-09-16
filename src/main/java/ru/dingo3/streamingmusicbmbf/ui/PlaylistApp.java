@@ -18,40 +18,14 @@ import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-//class RoundedImageExample extends JPanel {
-//    private BufferedImage image;
-//
-//    public RoundedImageExample() {
-//        try {
-//            image = ImageIO.read(new File("playlist1.jpg"));
-//            image = image.getSubimage(0, 0, 150, 150);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    @Override
-//    protected void paintComponent(Graphics g) {
-//        super.paintComponent(g);
-//        Graphics2D g2d = (Graphics2D) g.create();
-//
-//        int x = (getWidth() - image.getWidth()) / 2;
-//        int y = (getHeight() - image.getHeight()) / 2;
-//
-//        RoundRectangle2D rect = new RoundRectangle2D.Float(x, y, image.getWidth(), image.getHeight(), 50, 50);
-//        g2d.clip(rect);
-//        g2d.drawImage(image, x, y, this);
-//
-//        g2d.dispose();
-//    }
-//}
 
-public class PlaylistApp extends JDialog {
+public class PlaylistApp extends JFrame {
     private PlaylistHeader header;
     private Image logo;
 //    private CachedImageIconDb cashedImageIconDb;
@@ -61,8 +35,19 @@ public class PlaylistApp extends JDialog {
     public PlaylistApp(AbstractProvider provider, BasePlaylist playlist, ProviderManager providerManager) {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(800, 400));
-        setTitle(playlist.getTitle());
-        logo = Toolkit.getDefaultToolkit().getImage("media/logo2.png");
+        setPreferredSize(new java.awt.Dimension(800, 700));
+        setLocationRelativeTo(null);
+        setTitle("Playlist: " + playlist.getTitle());
+
+        InputStream streamLogo = getClass().getResourceAsStream("/logo2.png");
+
+//        logo = Toolkit.getDefaultToolkit().getImage("media/logo2.png");
+        try {
+            logo = ImageIO.read(streamLogo);
+        } catch (Exception e) {
+            // Error box Swing
+            System.out.println("Error loading logo");
+        }
         setIconImage(logo);
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
@@ -240,6 +225,7 @@ class MusicList extends JScrollPane {
 
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 //        setColumnHeaderView(new JPanel(new GridLayout(1, 3)));
+        getVerticalScrollBar().setUnitIncrement(25);
 
         headerPanel = new JPanel(new GridLayout(1, 3));
         headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
