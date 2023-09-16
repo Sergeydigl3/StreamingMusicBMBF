@@ -25,7 +25,7 @@ public class ProviderManager {
     private static final int nThreads = 5;
     @Setter
     @Getter
-    private Integer syncDelay = 1000;
+    private Integer syncDelay = 500;
 
     @Getter
     @Setter
@@ -82,6 +82,36 @@ public class ProviderManager {
         }
     }
 
+    private void fixOngoingSyncs() {
+        tracksDb.forEach((providerId, tracks) -> {
+            tracks.forEach(track -> {
+                if (track.getNowSyncing()) {
+                    track.setNowSyncing(false);
+                }
+                switch (track.getSyncState()) {
+                    case SYNCING:
+                        track.setSyncState(SyncState.CONVERTED);
+                        break;
+                    case CONVERSION:
+                        track.setSyncState(SyncState.DOWNLOADED);
+                        break;
+                    case DOWNLOADING:
+                        track.setSyncState(SyncState.NOT_DOWNLOADED);
+                        break;
+                }
+            });
+        });
+        db.forEach((providerId, playlists) -> {
+            playlists.forEach(playlist -> {
+                playlist.forEach((basePlaylist, tracks) -> {
+                    if (basePlaylist.getNowSyncing()) {
+                        basePlaylist.setNowSyncing(false);
+                    }
+                });
+            });
+        });
+    }
+
     //
     public void loadDbFromDisk() {
         try {
@@ -102,7 +132,7 @@ public class ProviderManager {
 //            db = objectMapper.readValue(json, ConcurrentHashMap.class);
 //            tracksDb = objectMapper.readValue(json, ConcurrentHashMap.class);
 
-
+            fixOngoingSyncs();
             System.out.println("Database loaded successfully from disk.");
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -202,6 +232,7 @@ public class ProviderManager {
                         // switch case pipline
                         boolean error = false;
                         while (track.getSyncState() != (delivery ? SyncState.SYNCED : SyncState.CONVERTED) && !error) {
+                            if (track.getSyncState() == SyncState.SYNCED) break;
                             System.out.println("Syncing track: " + track.getTitle() + " " + track.getSyncState());
                             switch (track.getSyncState()) {
                                 case NOT_DOWNLOADED:
@@ -236,7 +267,8 @@ public class ProviderManager {
                                     break;
                             }
                         }
-                        System.out.println("Syncing track: " + track.getTitle() + " " + track.getSyncState());
+
+//                        System.out.println("Syncing track: " + track.getTitle() + " " + track.getSyncState());
                         track.setNowSyncing(false);
                     });
 
