@@ -1,0 +1,18 @@
+<h1>BMBF Streaming Music</h1>
+<p>App for synchronizing music your music playlist from different streaming services.</p>
+<p>Application downloads music from streaming services </p>
+<p> and converting it with some converters(BeatSage now) to Beat Saber maps.</p>
+
+<h2>How to use</h2>
+<p>First of all you need to change settings(left bottom corner) and set:</p>
+<ul>
+    <li>Paste your token for Yandex Music</li>
+    <li>Enable delivery if needed</li>
+    <li>Set ip and port for delivery</li>
+</ul>
+<p>You can get your Yandex Music token from Chrome Extension "yandex-music-token"</p>
+
+<h2>How to sync</h2>
+<p>Open playlist and click "Sync button" under the cover image</p>
+<p>After that you should manually press "Perform sync" button</p>
+<p>You can see for progress details in a playlist tab in "Status column"</p>
