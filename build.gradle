@@ -14,6 +14,7 @@ plugins {
 //    id 'org.javamodularity.moduleplugin' version '1.8.12' apply true
     id 'application'
     id 'io.freefair.lombok' version '8.1.0'
+    id 'edu.sc.seis.launch4j' version '3.0.5'
 }
 //apply plugin: "io.freefair.lombok"
 
@@ -40,6 +41,25 @@ application {
     mainClass = 'ru.dingo3.streamingmusicbmbf.ui.MainCards'
 }
 
+launch4j {
+    mainClassName = 'ru.dingo3.streamingmusicbmbf.ui.MainCards'
+    icon = "${projectDir}/icons/logo2.ico"
+//    bundledJrePath = 'C:\\Program Files\\Java\\jdk-17.0.1'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'ru.dingo3.streamingmusicbmbf.ui.MainCards'
+        )
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+}
+
 test {
     useJUnitPlatform()
 }
@@ -48,4 +68,15 @@ compileJava.options.encoding = 'UTF-8'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs= ["src/main/java"]
+        }
+        resources {
+            srcDirs= ["media"]
+        }
+    }
 }
