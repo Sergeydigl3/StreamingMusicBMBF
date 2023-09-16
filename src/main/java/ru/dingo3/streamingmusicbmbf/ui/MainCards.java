@@ -14,6 +14,7 @@ import ru.dingo3.streamingmusicbmbf.ui.components.DashedRoundedSimpleButton;
 import ru.dingo3.streamingmusicbmbf.views.providers.AbstractProviderView;
 import ru.dingo3.streamingmusicbmbf.views.providers.YandexProviderView;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import javax.swing.border.CompoundBorder;
@@ -24,6 +25,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -40,8 +45,14 @@ public class MainCards extends JFrame {
     public MainCards() {
         AppSettings appSettings = AppSettings.getInstance();
 
+        InputStream streamLogo = getClass().getResourceAsStream("/logo2.png");
         // Load the logo image.
-        logo = Toolkit.getDefaultToolkit().getImage("media/logo2.png");
+        try {
+            logo = ImageIO.read(streamLogo);
+        } catch (Exception e) {
+            // Error box Swing
+            System.out.println("Error loading logo");
+        }
         setIconImage(logo);
         setTitle("BMBF Streaming Music");
 //        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -52,7 +63,7 @@ public class MainCards extends JFrame {
             }
         });
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(1000, 600));
+        setPreferredSize(new Dimension(970, 580));
 
         providerManager = new ProviderManager();
         providerManager.setFilePath(appSettings.getCachePath().toString() + "/providers.dat");
@@ -99,6 +110,10 @@ public class MainCards extends JFrame {
         cardPanel = new JPanel();
         cardLayout = new CardLayout();
         cardPanel.setLayout(cardLayout);
+        cardPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10)); // Отступы по краям
+
+
+
         cardPanel.add(new HomeCard(), "home");
 
         for (AbstractProviderView provider : providerViews) {
@@ -132,11 +147,11 @@ class MusicPanelButtons extends JPanel {
 
     public MusicPanelButtons(ArrayList<AbstractProviderView> providers, CardLayout cardLayout, JPanel cardPanel) {
         setLayout(new BorderLayout());
-
+        setBorder(BorderFactory.createEmptyBorder(23, 23, 20, 10)); // Отступы по краям
         // Create the button panel
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
-        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(40, 10, 10, 10)); // Отступы по краям
+        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 15, 23)); // Отступы по краям
 
         ButtonGroup buttonGroup = new ButtonGroup();
 
@@ -148,9 +163,30 @@ class MusicPanelButtons extends JPanel {
             }
         });
 
+        // add backlogo
+        InputStream streamBackLogo = getClass().getResourceAsStream("/backlogo.png");
+        Image backLogo = null;
+        try {
+            backLogo = ImageIO.read(streamBackLogo);
+            // Resize image
+            backLogo = backLogo.getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        } catch (Exception e) {
+            // Error box Swing
+            System.out.println("Error loading backlogo");
+        }
+        ImageIcon backLogoIcon = new ImageIcon(backLogo);
+        JLabel backLogoLabel = new JLabel(backLogoIcon, SwingConstants.CENTER);
+        JLabel nameLabel = new JLabel("BMBF Streaming Music", SwingConstants.CENTER);
+        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 15));
+
+        buttonsPanel.add(backLogoLabel);
+//        buttonsPanel.add(Box.createVerticalStrut(5));
+        buttonsPanel.add(nameLabel);
+        buttonsPanel.add(Box.createVerticalStrut(22));
+
         buttonsPanel.add(homeCardButton);
         buttonGroup.add(homeCardButton);
-        buttonsPanel.add(Box.createVerticalStrut(20));
+        buttonsPanel.add(Box.createVerticalStrut(30));
         // Create buttons for each provider
         for (AbstractProviderView providerView : providers) {
             AbstractProvider provider = providerView.getProvider();
@@ -253,6 +289,43 @@ class HomeCard extends JPanel {
 
         AppInfo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        BufferedReader br = null;
+        StringBuilder sb = new StringBuilder();
+        try {
+            InputStream is = getClass().getResourceAsStream("/home.txt");
+
+            if(is != null) {
+                br = new BufferedReader(new InputStreamReader(is));
+
+                //Print the content of Test.txt
+                String line;
+                while((line = br.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+            } else {
+                //Resource not found
+                System.out.println("Resource unavailable!");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace(); //Log IO Error
+        } finally {
+            if(br != null) {
+                try {
+                    br.close();
+                } catch (IOException ignored) {}
+            }
+        }
+
+
+
+        JLabel appInfoLabel = new JLabel("<html>" + sb.toString() + "</html>");
+        appInfoLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        appInfoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        appInfoLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        AppInfo.add(appInfoLabel);
+
+
 
 //        JPanel bottomPanel = new JPanel();
 //        bottomPanel.setLayout(new BorderLayout());
@@ -286,7 +359,7 @@ class HomeCard extends JPanel {
 class BaseCard extends JPanel {
     public BaseCard(AbstractProviderView provider, ProviderManager providerManager) {
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
         JPanel headerPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -302,8 +375,11 @@ class BaseCard extends JPanel {
         headerPanel.setLayout(new BorderLayout());
 
 
-        JLabel titleLabel = new JLabel("You are logged in as SomeUser");
-        JLabel rightLabel = new JLabel("Total playlist: 123");
+        JLabel titleLabel = new JLabel(provider.getLeftTitleText());
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        JLabel rightLabel = new JLabel("Total playlist: 0");
+        rightLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        rightLabel.setBorder(new EmptyBorder(0, 0, 0, 10));
         headerPanel.add(titleLabel, BorderLayout.WEST);
         headerPanel.add(rightLabel, BorderLayout.EAST);
 
@@ -319,6 +395,7 @@ class BaseCard extends JPanel {
 //        playlistPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 //        playlistPanel.setAlignmentY(Component.TOP_ALIGNMENT);
         ArrayList<BasePlaylist> playlists = provider.getProvider().getPlaylists();
+        rightLabel.setText("Total playlist: " + playlists.size());
         if (playlists != null) {
             for (BasePlaylist playlist : playlists) {
                 playlistPanel.add(new PlaylistPanel(playlist, provider.getProvider(), providerManager));
@@ -340,7 +417,7 @@ class BaseCard extends JPanel {
 //                BorderFactory.createMatteBorder(1, 0, 0, 0, Color.lightGray)
         );
 
-        JCheckBox checkBox = new JCheckBox("Enable background sync: ");
+        JCheckBox checkBox = new JCheckBox("Enable background sync (not working): ");
         checkBox.setHorizontalTextPosition(SwingConstants.LEFT);
 
 //        JButton performSyncButton = new JButton("Perform sync");
@@ -389,6 +466,8 @@ class PlaylistPanel extends JPanel {
         // Create and configure the title label
         JLabel titleLabel = new JLabel(playlist.getTitle());
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
+//        titleLabel.setPreferredSize(new Dimension(150, 50));
         add(titleLabel, BorderLayout.SOUTH);
 
         addMouseListener(new MouseAdapter() {
@@ -397,25 +476,38 @@ class PlaylistPanel extends JPanel {
                 // Open playlist
                 System.out.println("Clicked on playlist " + playlist.getId());
 
-                JDialog dialog = new PlaylistApp(provider, playlist, providerManager);
+                JFrame dialog = new PlaylistApp(provider, playlist, providerManager);
                 dialog.setVisible(true);
             }
         });
     }
 }
 
-class SettingsDialog extends JDialog {
+class SettingsDialog extends JFrame{
+    private Image logo;
+
     public SettingsDialog(ArrayList<AbstractProviderView> providers) {
 //        super(owner, "Settings", true);
+        setTitle("Settings");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 //        setUndecorated(true);
         setLayout(new BorderLayout());
-        setSize(new Dimension(400, 300));
+        setSize(new Dimension(400, 420));
 //        setPreferredSize(new Dimension(400, 300));
 //        setMinimumSize(new Dimension(400, 300));
-        setModal(false);
 //        setResizable(false);
         setLocationRelativeTo(null);
+
+        InputStream streamLogo = getClass().getResourceAsStream("/logo2.png");
+
+        logo = Toolkit.getDefaultToolkit().getImage("media/logo2.png");
+        try {
+            logo = ImageIO.read(streamLogo);
+        } catch (Exception e) {
+            // Error box Swing
+            System.out.println("Error loading logo");
+        }
+        setIconImage(logo);
 
         // First is AppSettings
         AppSettings appSettings = AppSettings.getInstance();
@@ -423,7 +515,7 @@ class SettingsDialog extends JDialog {
         JLabel titleLabel = new JLabel("Settings");
         titleLabel.setBorder(new EmptyBorder(15, 0, 14, 0));
         titleLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         add(titleLabel, BorderLayout.NORTH);
 //        add(, BorderLayout.NORTH);
 
@@ -562,7 +654,13 @@ class SettingsDialog extends JDialog {
             appSettings.setConverterId(((ComboBoxElement) Objects.requireNonNull(defaultConverterComboBox.getSelectedItem())).getValue());
             appSettings.setDeliveryBMBF(enableDeliveryCheckBox.isSelected());
             appSettings.setBmbfApiUrl(deliveryPathTextField.getText());
+
+            for (AbstractProviderView providerView : providers) {
+                providerView.saveSettings();
+            }
+
             appSettings.saveConfig();
+            JOptionPane.showMessageDialog(null, "Settings saved. Restart the app.", "Info", JOptionPane.INFORMATION_MESSAGE);
             dispose();
         });
         bottomPanel.add(saveButton, BorderLayout.EAST);
