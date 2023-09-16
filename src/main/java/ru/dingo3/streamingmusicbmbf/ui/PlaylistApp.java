@@ -256,24 +256,19 @@ class MusicList extends JScrollPane {
                             if (labelStorage.containsKey(track)) {
                                 JLabel label = labelStorage.get(track);
                                 if (label != null) {
-                                    // TODO: replace to switch
-                                    if (track.getSyncState() == SyncState.DOWNLOADED) {
-                                        label.setText("Downloaded");
-                                    } else if (track.getSyncState() == SyncState.DOWNLOADING) {
-                                        label.setText("Downloading");
-                                    } else if (track.getSyncState() == SyncState.NOT_DOWNLOADED) {
-                                        label.setText("Not downloaded");
-                                    } else if (track.getSyncState() == SyncState.CONVERSION) {
-                                        label.setText("Converting");
-                                    } else if (track.getSyncState() == SyncState.CONVERTED) {
-                                        label.setText("Converted");
-                                    } else if (track.getSyncState() == SyncState.SYNCING) {
-                                        label.setText("Syncing");
-                                    } else if (track.getSyncState() == SyncState.SYNCED) {
-                                        label.setText("Synced");
-                                    } else {
-                                        label.setText("Unknown");
-                                    }
+                                    SyncState syncState = track.getSyncState();
+                                    String labelText = switch (syncState) {
+                                        case DOWNLOADED -> "Downloaded";
+                                        case DOWNLOADING -> "Downloading";
+                                        case NOT_DOWNLOADED -> "Not downloaded";
+                                        case CONVERSION -> "Converting";
+                                        case CONVERTED -> "Converted";
+                                        case SYNCING -> "Syncing";
+                                        case SYNCED -> "Synced";
+                                        default -> "Unknown";
+                                    };
+
+                                    label.setText(labelText);
                                 }
                             }
                         }

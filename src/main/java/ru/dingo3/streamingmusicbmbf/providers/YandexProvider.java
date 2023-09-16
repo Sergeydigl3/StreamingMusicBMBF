@@ -41,10 +41,9 @@ public class YandexProvider implements AbstractProvider, Serializable {
 
     @Getter
     @Setter
-    private String token; // TODO: Implement token in settings
+    private String token;
 
     public YandexProvider(Path cachePath) {
-//        token = System.getenv("YM_TOKEN"); // TODO: Remove env set
         this.cachePath = Paths.get(cachePath.toString(), providerId);
         loadConfig();
 //        System.out.println("YandexProvider: " + cachePath);
