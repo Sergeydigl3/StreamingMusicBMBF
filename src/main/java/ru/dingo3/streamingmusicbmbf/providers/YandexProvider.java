@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
 import ru.dingo3.streamingmusicbmbf.libs.YandexMusicClient;
+import ru.dingo3.streamingmusicbmbf.models.AccountResponse;
 import ru.dingo3.streamingmusicbmbf.models.PlaylistResponse;
 import ru.dingo3.streamingmusicbmbf.models.PlaylistsResponse;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
@@ -77,7 +78,11 @@ public class YandexProvider implements AbstractProvider, Serializable {
 
 
     public String getUsername() {
-        return yandexMusicClient.getMe().getLogin();
+        AccountResponse.Result.AccountInfo temp = yandexMusicClient.getMe();
+        if (temp == null) {
+            return "";
+        }
+        return temp.getLogin();
     }
 
     @Override

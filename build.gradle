@@ -44,7 +44,7 @@ application {
 launch4j {
     mainClassName = 'ru.dingo3.streamingmusicbmbf.ui.MainCards'
     icon = "${projectDir}/icons/logo2.ico"
-//    bundledJrePath = 'C:\\Program Files\\Java\\jdk-17.0.1'
+
 }
 
 jar {

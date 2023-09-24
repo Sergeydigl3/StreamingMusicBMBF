@@ -257,16 +257,33 @@ class MusicList extends JScrollPane {
                                 JLabel label = labelStorage.get(track);
                                 if (label != null) {
                                     SyncState syncState = track.getSyncState();
-                                    String labelText = switch (syncState) {
-                                        case DOWNLOADED -> "Downloaded";
-                                        case DOWNLOADING -> "Downloading";
-                                        case NOT_DOWNLOADED -> "Not downloaded";
-                                        case CONVERSION -> "Converting";
-                                        case CONVERTED -> "Converted";
-                                        case SYNCING -> "Syncing";
-                                        case SYNCED -> "Synced";
-                                        default -> "Unknown";
-                                    };
+                                    String labelText;
+                                    switch (syncState) {
+                                        case DOWNLOADED:
+                                            labelText = "Downloaded";
+                                            break;
+                                        case DOWNLOADING:
+                                            labelText = "Downloading";
+                                            break;
+                                        case NOT_DOWNLOADED:
+                                            labelText = "Not downloaded";
+                                            break;
+                                        case CONVERSION:
+                                            labelText = "Converting";
+                                            break;
+                                        case CONVERTED:
+                                            labelText = "Converted";
+                                            break;
+                                        case SYNCING:
+                                            labelText = "Syncing";
+                                            break;
+                                        case SYNCED:
+                                            labelText = "Synced";
+                                            break;
+                                        default:
+                                            labelText = "Unknown";
+                                            break;
+                                    }
 
                                     label.setText(labelText);
                                 }
