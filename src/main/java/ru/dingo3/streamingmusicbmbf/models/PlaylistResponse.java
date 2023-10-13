@@ -14,6 +14,7 @@ public class PlaylistResponse {
     private PlaylistResult result;
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class InvocationInfo {
         @JsonProperty("exec-duration-millis")
         private int executionDurationMillis;

@@ -12,11 +12,13 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AccountResponse {
     private InvocationInfo invocationInfo;
     private Result result;
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class InvocationInfo {
         private String hostname;
         @JsonProperty("req-id")
@@ -31,6 +33,7 @@ public class AccountResponse {
         private AccountInfo account;
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class AccountInfo {
             private String now;
             private int uid;
@@ -50,6 +53,7 @@ public class AccountResponse {
         }
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class PassportPhone {
             private String phone;
         }
