@@ -38,24 +38,24 @@ public class AccountResponse {
             private String now;
             private int uid;
             private String login;
-            private int region;
+//            private int region;
             private String fullName;
             private String secondName;
             private String firstName;
             private String displayName;
             private boolean serviceAvailable;
             private boolean hostedUser;
-            @JsonProperty("passport-phones")
-            private List<PassportPhone> passportPhones;
-            private String registeredAt;
-            private boolean child;
-            private boolean nonOwnerFamilyMember;
+//            @JsonProperty("passport-phones")
+//            private List<PassportPhone> passportPhones;
+//            private String registeredAt;
+//            private boolean child;
+//            private boolean nonOwnerFamilyMember;
         }
 
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class PassportPhone {
-            private String phone;
-        }
+//        @Data
+//        @JsonIgnoreProperties(ignoreUnknown = true)
+//        public static class PassportPhone {
+//            private String phone;
+//        }
     }
 }

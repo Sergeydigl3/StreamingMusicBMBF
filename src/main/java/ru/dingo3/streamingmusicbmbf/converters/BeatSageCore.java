@@ -94,8 +94,11 @@ public class BeatSageCore implements AbstractConverter {
         this.difficulty = new Difficulty();
         this.gameModes = new GameModes();
         this.songEvent = new SongEvent();
-        this.environments = Environments.DEFAULT;
-        this.modelVersion = ModelVersion.MODEL_V2;
+//        this.environments = Environments.DEFAULT;
+        this.environments = Environments.ROCKET_LEAGUE;
+//        this.modelVersion = ModelVersion.MODEL_V2;
+        this.modelVersion = ModelVersion.MODEL_V2_FLOW;
+
     }
 
     public void setDifficulty(boolean normal, boolean hard, boolean expert, boolean expertPlus) {

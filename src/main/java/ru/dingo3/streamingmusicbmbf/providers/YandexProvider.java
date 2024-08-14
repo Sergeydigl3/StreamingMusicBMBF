@@ -12,6 +12,7 @@ import ru.dingo3.streamingmusicbmbf.models.PlaylistsResponse;
 import ru.dingo3.streamingmusicbmbf.providers.models.BasePlaylist;
 import ru.dingo3.streamingmusicbmbf.providers.models.BaseTrack;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
@@ -66,6 +67,14 @@ public class YandexProvider implements AbstractProvider, Serializable {
     }
 
     public void saveConfig() {
+        if (!Files.exists(cachePath)) {
+            try {
+                Files.createDirectories(cachePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         JSONObject configJson = new JSONObject();
         configJson.put("token", token);
         Path configPath = Paths.get(cachePath.toString(), "config.json");
@@ -133,8 +142,12 @@ public class YandexProvider implements AbstractProvider, Serializable {
                 track.setId(Integer.toString(ymTrack.getId()));
                 track.setTitle(ymTrack.getTrack().getTitle());
                 track.setArtist(ymTrack.getTrack().getArtists().get(0).getName());
-
-                track.setCoverUrl("https://"+ymTrack.getTrack().getOgImage().replace("%%", "400x400"));
+                String imageUrl;
+                if (ymTrack.getTrack().getOgImage() == null || ymTrack.getTrack().getOgImage().isEmpty())
+                    imageUrl = "https://fakeimg.pl/%%";
+                else
+                    imageUrl = "https://" + ymTrack.getTrack().getOgImage();
+                track.setCoverUrl(imageUrl.replace("%%", "400x400"));
                 tracks.add(track);
             }
         }
